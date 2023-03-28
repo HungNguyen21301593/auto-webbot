@@ -1,0 +1,9 @@
+footer {
+    background: #2c387d;
+    color: aliceblue;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    opacity: 0.9;
+}

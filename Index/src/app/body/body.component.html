@@ -1,0 +1,15 @@
+<div [ngSwitch]="this.bodyContentService.contentBodyObserable.value">
+  <div *ngSwitchCase="Type.KijijiSetting">
+    <div class="row around-xs main-content">
+      <app-kijiji-setting class="col-xs-3"></app-kijiji-setting>
+      <app-web-viewer class="col-xs-7"></app-web-viewer>
+    </div>
+  </div>
+
+  <div *ngSwitchCase="Type.KijijiChart" class="row around-xs">
+    <div class="main-content">
+      <app-kijiji-chart></app-kijiji-chart>
+      <app-post-history></app-post-history>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<div class="wrapper">
+  <!-- <button mat-raised-button (click)="isLinear = !isLinear" id="toggle-linear">
+    {{!isLinear ? 'Enable linear mode' : 'Disable linear mode'}}
+  </button> -->
+  <mat-stepper orientation="vertical" [linear]="isLinear" #stepper>
+    <!-- <mat-step [stepControl]="registrationFormGroup">
+      <form [formGroup]="registrationFormGroup">
+        <ng-template matStepLabel>Please insert your registration ID:</ng-template>
+        <p>This ID is linked to the number of reposts you can perform. If you don't have any reposts left, please contact the developer for more.</p>
+        <mat-form-field appearance="fill">
+          <mat-label>ID</mat-label>
+          <input matInput pattern="^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$" placeholder="For eg: bcf89cc2-894f-47ac-8e7f-2d8d82d073a9" formControlName="registrationCtrl"
+            required>
+        </mat-form-field>
+        <div>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step> -->
+    <mat-step [stepControl]="accountFormGroup">
+      <form [formGroup]="accountFormGroup">
+        <ng-template matStepLabel>Please insert your Kijiji account:</ng-template>
+        <p>As previously discussed, your Kijiji account will remain confidential and will only be saved on your personal computer.</p>
+        <mat-form-field appearance="fill">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="emailCtrl" placeholder="kijiji@gmail.com" required>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="passwordCtrl" placeholder="kijiji@123" required>
+        </mat-form-field>
+        <div>
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="repostTriggerFormGroup">
+      <form [formGroup]="repostTriggerFormGroup">
+        <ng-template matStepLabel>
+          When do you like to trigger the bump up?
+        </ng-template>
+        <p>
+          For instance, if you want your ad to appear on the first page, please enter the number '2'.
+        </p>
+        <mat-form-field appearance="fill">
+          <mat-label>When exceeds page (minimum 2):</mat-label>
+          <input matInput min="2" type="number" formControlName="repostTriggerCtrl" placeholder="2" required>
+        </mat-form-field>
+        <div>
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step>
+      <ng-template matStepLabel>Done</ng-template>
+      <p>You are now done. Please submit to apply the setting.</p>
+      <div>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button type="submit" (click)="submit()">Submit</button>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

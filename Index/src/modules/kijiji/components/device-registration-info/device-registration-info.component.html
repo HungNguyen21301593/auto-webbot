@@ -1,0 +1,20 @@
+<div class="row around-xs main">
+  <div [hidden]="deviceStatus?.status">
+    <mat-icon  [color]="'warn'">error</mat-icon>
+  </div>
+  <div [hidden]="!deviceStatus?.status">
+    <mat-icon  [color]="'primary'">verified_user</mat-icon>
+  </div>
+  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.status" [disabled]="true">
+    Is Device Verified?
+  </mat-slide-toggle>
+  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.isVipDevice" [disabled]="true">
+    Is VIP Device?
+  </mat-slide-toggle>
+  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.isRePostLimitIsValid" [disabled]="true">
+    Repost remaning? ({{deviceStatus?.deviceInfo?.remainingPostLimit}} remainning)
+  </mat-slide-toggle>
+  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.isNotExpired" [disabled]="true">
+    Is Not Expired? (Expired Date: {{utilService.formatLocalDisplayDate(deviceStatus?.deviceInfo?.expiredDate)}})
+  </mat-slide-toggle>
+</div>

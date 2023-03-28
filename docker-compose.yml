@@ -1,0 +1,75 @@
+version: "3.9"
+services:
+  browser:
+    container_name: browser
+    image: selenium/standalone-chrome:dev
+    hostname: browser
+    shm_size: 2gb
+    privileged: true
+    networks:
+          - web_net
+    environment:
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_NODE_SESSION_TIMEOUT=21600
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    volumes:
+      - shared-volume:/app/images
+
+  database:
+    image: postgres:14.1-alpine
+    container_name: database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+    networks:
+          - web_net
+
+  api:
+    container_name: api
+    hostname: ${hostname}
+    build: "./WebApi"
+    shm_size: 2gb
+    privileged: true
+    networks:
+          - web_net
+    depends_on: 
+            - browser
+            - database
+    ports:
+      - "5252:5252"
+    volumes:
+      - shared-volume:/app/images
+    environment:
+      - TestMode=true
+      - ASPNETCORE_URLS=http://+:5252
+
+  index:
+    container_name: index
+    hostname: index
+    build: "./Index"
+    shm_size: 2gb
+    depends_on: 
+            - api
+    networks:
+          - web_net
+    ports:
+      - "3000:8080"
+      - "3001:8081"
+    volumes:
+      - ./Index/dist/index:/app
+    
+networks:
+    web_net:
+      external: false
+      driver:  bridge
+
+volumes:
+  shared-volume:
+  db:

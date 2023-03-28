@@ -1,0 +1,13 @@
+.example-spacer {
+    flex: 1 1 auto !important;
+}
+
+.header {
+    background: #2c387d;
+    color: aliceblue;
+    opacity: 0.9;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+}
