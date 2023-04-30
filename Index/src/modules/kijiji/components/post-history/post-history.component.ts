@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { interval, Subscription } from 'rxjs';
+import { UtilService } from 'src/core-services/util.service';
 import { environment } from 'src/environments/environment';
 import { Client, ILogTreeNode, LogTreeStatus } from '../../client.interface';
 
@@ -19,10 +20,11 @@ export class PostHistoryComponent implements OnInit, OnDestroy {
   dataSource = new MatTreeNestedDataSource<ILogTreeNode>();
   subscription?: Subscription;
 
-  constructor(private client: Client) {
+  constructor(private client: Client, public utilService: UtilService,) {
   }
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.utilService.formatLocalDisplayDate
   }
   ngOnInit(): void {
     this.loadLogTreedata();

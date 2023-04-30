@@ -43,7 +43,8 @@ namespace Infastructure.Repositories
             existingSetting.PageToTrigger = setting.PageToTrigger;
             existingSetting.KijijiEmail = setting.KijijiEmail;
             existingSetting.KijijiPassword = setting.KijijiPassword;
-            existingSetting.RegistrationId = setting.RegistrationId;
+            existingSetting.RePostInterval = setting.RePostInterval != 0 ? setting.RePostInterval : existingSetting.RePostInterval;
+            existingSetting.ReadInterval = setting.ReadInterval != 0 ? setting.ReadInterval : existingSetting.ReadInterval;
             await DataContext.SaveChangesAsync();
             return existingSetting;
         }

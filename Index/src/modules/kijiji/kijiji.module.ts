@@ -18,6 +18,17 @@ import { KijijiChartComponent } from './components/kijiji-chart/kijiji-chart.com
 import { NgxEchartsModule } from 'ngx-echarts';
 import * as echarts from 'echarts';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatDialogModule} from '@angular/material/dialog';
+import { DeviceRegistrationDialogComponent } from './components/device-registration-dialog/device-registration-dialog.component';
+import {MatListModule} from '@angular/material/list';
+import {MatSliderModule} from '@angular/material/slider';
+import { FormsModule } from '@angular/forms';
+import {MatCardModule} from '@angular/material/card';
+import { SaveSettingDialogComponent } from './components/save-setting-dialog/save-setting-dialog.component';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatButtonModule} from '@angular/material/button';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 @NgModule({
   imports: [
@@ -31,7 +42,16 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
     MatBadgeModule,
     MatSlideToggleModule,
     NgxEchartsModule.forRoot({ echarts }),
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatListModule,
+    MatSliderModule,
+    FormsModule,
+    MatCardModule,
+    MatSnackBarModule,
+    MatButtonModule,
+    MatRadioModule,
+    MatTooltipModule
   ],
   declarations:
     [
@@ -41,7 +61,9 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
       PostHistoryComponent,
       KijijiSettingComponent,
       DeviceRegistrationInfoComponent,
-      KijijiChartComponent
+      KijijiChartComponent,
+      DeviceRegistrationDialogComponent,
+      SaveSettingDialogComponent
     ],
   exports: [
     KijijiStepperComponent,

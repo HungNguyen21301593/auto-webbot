@@ -1,0 +1,96 @@
+version: "3.9"
+services:
+
+  selenium-hub:
+    image: selenium/hub:latest
+    hostname: ${HOST_NAME}
+    container_name: selenium-hub
+    restart: always
+    networks:
+          - web_net
+    ports:
+      - "${SE_EVENT_BUS_PUBLISH_PORT}:${SE_EVENT_BUS_PUBLISH_PORT}"
+      - "${SE_EVENT_BUS_SUBSCRIBE_PORT}:${SE_EVENT_BUS_SUBSCRIBE_PORT}"
+      - "${BROWSER_PORT}:${BROWSER_PORT}"
+  browser:
+    container_name: kijiji-helper-browser
+    hostname: ${HOST_NAME}
+    image: selenium/node-chrome:111.0
+    shm_size: 2gb
+    privileged: true
+    restart: always
+    depends_on:
+      - selenium-hub
+    networks:
+          - web_net
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=${SE_EVENT_BUS_PUBLISH_PORT}
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=${SE_EVENT_BUS_SUBSCRIBE_PORT}
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_NODE_SESSION_TIMEOUT=21600
+    ports:
+      - "0.0.0.0:${BROWSER_VIEW_PORT}:7900"
+    volumes:
+      - kijiji-helper-shared-volume:/app/images
+
+  database:
+    image: postgres:14.1-alpine
+    hostname: ${HOST_NAME}
+    container_name: kijiji-helper-database
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '${DB_PORT}:5432'
+    volumes: 
+      - kijiji-helper-db:/var/lib/postgresql/data
+    networks:
+          - web_net
+
+  api:
+    container_name: kijiji-helper-api
+    hostname: ${HOST_NAME}
+    image: hungnguyen991995/kijiji-helper-api:latest
+    restart: always
+    shm_size: 2gb
+    privileged: true
+    networks:
+          - web_net
+    depends_on: 
+          - browser
+          - database
+          - selenium-hub
+    ports:
+      - "${API_PORT}:5252"
+    volumes:
+      - kijiji-helper-shared-volume:/app/images
+    environment:
+      - TestMode=false
+      - ASPNETCORE_URLS=http://+:${API_PORT}
+      - REMOTE_DRIVER_URL=http://selenium-hub:${BROWSER_PORT}/wd/hub
+
+  index:
+    container_name: kijiji-helper-index
+    hostname: ${HOST_NAME}
+    restart: always
+    image: hungnguyen991995/kijiji-helper-index:latest
+    shm_size: 2gb
+    depends_on: 
+            - api
+    networks:
+          - web_net
+    ports:
+      - "3000:8080"
+      - "${INDEX_PORT}:8081"
+    
+networks:
+    web_net:
+      external: false
+      driver:  bridge
+
+volumes:
+  kijiji-helper-shared-volume:
+  kijiji-helper-db:

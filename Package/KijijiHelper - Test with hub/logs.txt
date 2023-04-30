@@ -1,0 +1,164 @@
+kijiji-helper-api  | [01:09:42] info: Quartz.Core.SchedulerSignalerImpl[0]
+kijiji-helper-api  |       Initialized Scheduler Signaller of type: Quartz.Core.SchedulerSignalerImpl
+kijiji-helper-api  | [01:09:42] info: Quartz.Core.QuartzScheduler[0]
+kijiji-helper-api  |       Quartz Scheduler created
+kijiji-helper-api  | [01:09:42] info: Quartz.Core.QuartzScheduler[0]
+kijiji-helper-api  |       JobFactory set to: Quartz.Simpl.MicrosoftDependencyInjectionJobFactory
+kijiji-helper-api  | [01:09:42] info: Quartz.Simpl.RAMJobStore[0]
+kijiji-helper-api  |       RAMJobStore initialized.
+kijiji-helper-api  | [01:09:42] info: Quartz.Impl.StdSchedulerFactory[0]
+kijiji-helper-api  |       Quartz Scheduler 3.6.0.0 - 'QuartzScheduler' with instanceId 'NON_CLUSTERED' initialized
+kijiji-helper-api  | [01:09:42] info: Quartz.Impl.StdSchedulerFactory[0]
+kijiji-helper-api  |       Using thread pool 'Quartz.Simpl.DefaultThreadPool', size: 10
+kijiji-helper-api  | [01:09:42] info: Quartz.Impl.StdSchedulerFactory[0]
+kijiji-helper-api  |       Using job store 'Quartz.Simpl.RAMJobStore', supports persistence: False, clustered: False
+kijiji-helper-api  | [01:09:42] info: Microsoft.Hosting.Lifetime[14]
+kijiji-helper-api  |       Now listening on: http://[::]:80
+kijiji-helper-api  | [01:09:42] info: Microsoft.Hosting.Lifetime[0]
+kijiji-helper-api  |       Application started. Press Ctrl+C to shut down.
+kijiji-helper-api  | [01:09:42] info: Microsoft.Hosting.Lifetime[0]
+kijiji-helper-api  |       Hosting environment: Production
+kijiji-helper-api  | [01:09:42] info: Microsoft.Hosting.Lifetime[0]
+kijiji-helper-api  |       Content root path: /app/
+kijiji-helper-api  | [01:09:42] info: Quartz.Core.QuartzScheduler[0]
+kijiji-helper-api  |       Scheduler QuartzScheduler_$_NON_CLUSTERED started.
+kijiji-helper-api  | [01:10:35] warn: Microsoft.EntityFrameworkCore.Query[10103]
+kijiji-helper-api  |       The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+kijiji-helper-api  | [01:10:35] info: UseCase.Jobs.ReadAllActiveAdsJob[0]
+kijiji-helper-api  |       Job ReadAllActiveAdsJob rescheduled with 1
+kijiji-helper-api  | [01:10:35] info: UseCase.Jobs.RePostAdByTitleJob[0]
+kijiji-helper-api  |       Job rescheduled RePostAdByTitleJob with 1
+kijiji-helper-api  | [01:10:35] info: UseCase.Jobs.RePostAdByTitleJob[0]
+kijiji-helper-api  |       There is no active post available, no work will be proceeded
+kijiji-helper-api  | [01:11:03] info: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       ******************************************************
+kijiji-helper-api  | [01:11:03] info: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       Started ReadAllAd
+kijiji-helper-api  | [01:11:03] info: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       ******************************************************
+kijiji-helper-api  | [01:11:17] warn: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       Post with title GETIHU Car Phone Holder, Universal Dashboard Magnetic Phone Moun is new or has already posted successfully, proceed to register
+kijiji-helper-api  | [01:11:17] warn: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       Post with title GETIHU Car Phone Holder, Universal Dashboard Magnetic Phone Moun already registered, so skip
+kijiji-helper-api  | [01:11:17] info: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       ******************************************************
+kijiji-helper-api  | [01:11:17] info: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       Done ReadAllAd
+kijiji-helper-api  | [01:11:17] info: UseCase.Service.KijijiPostingService[0]
+kijiji-helper-api  |       ******************************************************
+kijiji-helper-api  | [01:11:17] info: UseCase.Jobs.ReadAllActiveAdsJob[0]
+kijiji-helper-api  |       Job executed ReadAllActiveAdsJob
+kijiji-helper-index  | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+kijiji-helper-index  | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+kijiji-helper-index  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+kijiji-helper-index  | 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+kijiji-helper-index  | 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+kijiji-helper-index  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+kijiji-helper-index  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+kijiji-helper-index  | /docker-entrypoint.sh: Configuration complete; ready for start up
+kijiji-helper-database  | The files belonging to this database system will be owned by user "postgres".
+kijiji-helper-database  | This user must also own the server process.
+kijiji-helper-database  | 
+kijiji-helper-database  | The database cluster will be initialized with locale "en_US.utf8".
+kijiji-helper-database  | The default database encoding has accordingly been set to "UTF8".
+kijiji-helper-database  | The default text search configuration will be set to "english".
+kijiji-helper-database  | 
+kijiji-helper-database  | Data page checksums are disabled.
+kijiji-helper-database  | 
+kijiji-helper-database  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+kijiji-helper-database  | creating subdirectories ... ok
+kijiji-helper-database  | selecting dynamic shared memory implementation ... posix
+kijiji-helper-database  | selecting default max_connections ... 100
+kijiji-helper-database  | selecting default shared_buffers ... 128MB
+kijiji-helper-database  | selecting default time zone ... UTC
+kijiji-helper-database  | creating configuration files ... ok
+kijiji-helper-database  | running bootstrap script ... ok
+kijiji-helper-database  | sh: locale: not found
+kijiji-helper-database  | 2023-02-21 01:09:33.634 UTC [29] WARNING:  no usable system locales were found
+kijiji-helper-database  | performing post-bootstrap initialization ... ok
+kijiji-helper-database  | initdb: warning: enabling "trust" authentication for local connections
+kijiji-helper-database  | You can change this by editing pg_hba.conf or using the option -A, or
+kijiji-helper-database  | --auth-local and --auth-host, the next time you run initdb.
+kijiji-helper-database  | syncing data to disk ... ok
+kijiji-helper-database  | 
+kijiji-helper-database  | 
+kijiji-helper-database  | Success. You can now start the database server using:
+kijiji-helper-database  | 
+kijiji-helper-database  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+kijiji-helper-database  | 
+kijiji-helper-database  | waiting for server to start....2023-02-21 01:09:34.399 UTC [35] LOG:  starting PostgreSQL 14.1 on x86_64-pc-linux-musl, compiled by gcc (Alpine 10.3.1_git20211027) 10.3.1 20211027, 64-bit
+kijiji-helper-database  | 2023-02-21 01:09:34.402 UTC [35] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+kijiji-helper-database  | 2023-02-21 01:09:34.409 UTC [36] LOG:  database system was shut down at 2023-02-21 01:09:34 UTC
+kijiji-helper-database  | 2023-02-21 01:09:34.413 UTC [35] LOG:  database system is ready to accept connections
+kijiji-helper-database  |  done
+kijiji-helper-database  | server started
+kijiji-helper-database  | 
+kijiji-helper-database  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+kijiji-helper-database  | 
+kijiji-helper-database  | waiting for server to shut down....2023-02-21 01:09:34.495 UTC [35] LOG:  received fast shutdown request
+kijiji-helper-database  | 2023-02-21 01:09:34.498 UTC [35] LOG:  aborting any active transactions
+kijiji-helper-database  | 2023-02-21 01:09:34.499 UTC [35] LOG:  background worker "logical replication launcher" (PID 42) exited with exit code 1
+kijiji-helper-database  | 2023-02-21 01:09:34.499 UTC [37] LOG:  shutting down
+kijiji-helper-database  | 2023-02-21 01:09:34.518 UTC [35] LOG:  database system is shut down
+kijiji-helper-database  |  done
+kijiji-helper-database  | server stopped
+kijiji-helper-database  | 
+kijiji-helper-database  | PostgreSQL init process complete; ready for start up.
+kijiji-helper-database  | 
+kijiji-helper-database  | 2023-02-21 01:09:34.611 UTC [1] LOG:  starting PostgreSQL 14.1 on x86_64-pc-linux-musl, compiled by gcc (Alpine 10.3.1_git20211027) 10.3.1 20211027, 64-bit
+kijiji-helper-database  | 2023-02-21 01:09:34.611 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+kijiji-helper-database  | 2023-02-21 01:09:34.611 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+kijiji-helper-database  | 2023-02-21 01:09:34.618 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+kijiji-helper-database  | 2023-02-21 01:09:34.624 UTC [47] LOG:  database system was shut down at 2023-02-21 01:09:34 UTC
+kijiji-helper-database  | 2023-02-21 01:09:34.627 UTC [1] LOG:  database system is ready to accept connections
+kijiji-helper-browser   | 2023-02-21 01:09:34,141 INFO Included extra file "/etc/supervisor/conf.d/selenium.conf" during parsing
+kijiji-helper-browser   | 2023-02-21 01:09:34,146 INFO RPC interface 'supervisor' initialized
+kijiji-helper-browser   | 2023-02-21 01:09:34,146 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+kijiji-helper-browser   | 2023-02-21 01:09:34,147 INFO supervisord started with pid 8
+kijiji-helper-browser   | 2023-02-21 01:09:35,149 INFO spawned: 'xvfb' with pid 10
+kijiji-helper-browser   | 2023-02-21 01:09:35,151 INFO spawned: 'vnc' with pid 11
+kijiji-helper-browser   | 2023-02-21 01:09:35,152 INFO spawned: 'novnc' with pid 12
+kijiji-helper-browser   | 2023-02-21 01:09:35,154 INFO spawned: 'selenium-standalone' with pid 14
+kijiji-helper-browser   | Setting up SE_NODE_GRID_URL...
+kijiji-helper-browser   | 2023-02-21 01:09:35,160 INFO success: xvfb entered RUNNING state, process has stayed up for > than 0 seconds (startsecs)
+kijiji-helper-browser   | 2023-02-21 01:09:35,160 INFO success: vnc entered RUNNING state, process has stayed up for > than 0 seconds (startsecs)
+kijiji-helper-browser   | 2023-02-21 01:09:35,160 INFO success: novnc entered RUNNING state, process has stayed up for > than 0 seconds (startsecs)
+kijiji-helper-browser   | 2023-02-21 01:09:35,160 INFO success: selenium-standalone entered RUNNING state, process has stayed up for > than 0 seconds (startsecs)
+kijiji-helper-browser   | Selenium Grid Standalone configuration: 
+kijiji-helper-browser   | [network]
+kijiji-helper-browser   | relax-checks = true
+kijiji-helper-browser   | 
+kijiji-helper-browser   | [node]
+kijiji-helper-browser   | session-timeout = "21600"
+kijiji-helper-browser   | override-max-sessions = false
+kijiji-helper-browser   | detect-drivers = false
+kijiji-helper-browser   | drain-after-session-count = 0
+kijiji-helper-browser   | max-sessions = 1
+kijiji-helper-browser   | 
+kijiji-helper-browser   | [[node.driver-configuration]]
+kijiji-helper-browser   | display-name = "chrome"
+kijiji-helper-browser   | stereotype = '{"browserName": "chrome", "browserVersion": "111.0", "platformName": "Linux"}'
+kijiji-helper-browser   | max-sessions = 1
+kijiji-helper-browser   | 
+kijiji-helper-browser   | Starting Selenium Grid Standalone...
+kijiji-helper-browser   | Tracing is disabled
+kijiji-helper-browser   | 01:09:35.865 INFO [LoggingOptions.configureLogEncoding] - Using the system default encoding
+kijiji-helper-browser   | 01:09:35.872 INFO [OpenTelemetryTracer.createTracer] - Using OpenTelemetry for tracing
+kijiji-helper-browser   | 01:09:37.076 INFO [NodeOptions.getSessionFactories] - Detected 16 available processors
+kijiji-helper-browser   | 01:09:37.177 INFO [NodeOptions.report] - Adding chrome for {"browserVersion": "111.0","se:noVncPort": 7900,"browserName": "chrome","platformName": "LINUX","se:vncEnabled": true} 1 times
+kijiji-helper-browser   | 01:09:37.210 INFO [Node.<init>] - Binding additional locator mechanisms: relative
+kijiji-helper-browser   | 01:09:37.247 INFO [GridModel.setAvailability] - Switching Node a0b92b6d-c5e2-4afc-bb18-7b8336744f19 (uri: http://172.22.0.3:4444) from DOWN to UP
+kijiji-helper-browser   | 01:09:37.248 INFO [LocalDistributor.add] - Added node a0b92b6d-c5e2-4afc-bb18-7b8336744f19 at http://172.22.0.3:4444. Health check every 120s
+kijiji-helper-browser   | 01:09:37.543 INFO [Standalone.execute] - Started Selenium Standalone 4.8.0 (revision 267030adea): http://172.22.0.3:4444
+kijiji-helper-browser   | 01:09:41.409 INFO [LocalDistributor.newSession] - Session request received by the Distributor: 
+kijiji-helper-browser   |  [Capabilities {browserName: chrome, goog:chromeOptions: {args: [--disable-notifications, --start-maximized, --ignore-ssl-errors, --ignore-certificate-errors, no-sandbox, --disable-gpu, --disable-logging, --disable-popup-blocking, disable-blink-features=Auto..., --disable-dev-shm-usage, --log-level=3, --disable-application-cache, enable-features=NetworkServ..., --disable-features=NetworkS...], excludeSwitches: [enable-automation]}, pageLoadStrategy: normal}]
+kijiji-helper-browser   | Starting ChromeDriver 110.0.5481.30 (aedb656755c469651f01505a4f15e153fc606a1e-refs/branch-heads/5481@{#191}) on port 12550
+kijiji-helper-browser   | Only local connections are allowed.
+kijiji-helper-browser   | Please see https://chromedriver.chromium.org/security-considerations for sugg[16769417e81s.t4i7on1s] [oSnE VkEeReEp]i:n gb iCnhdrome(Dr)i vfaeilre ds:a Cfaen.n
+kijiji-helper-browser   | ChromeoDtr iavsesri gwna sr esqtuaerstteedd  saudcdcreessssf u(l9l9y).
+kijiji-helper-browser   | 
+kijiji-helper-browser   | [1676941782.122][WARNING]: This version of ChromeDriver has not been tested with Chrome version 111.
+kijiji-helper-browser   | [1676941782.160][WARNING]: virtual void DevToolsClientImpl::AddListener(DevToolsEventListener *) subscribing a listener to the already connected DevToolsClient. Connection notification will not arrive.
+kijiji-helper-browser   | 01:09:42.340 INFO [LocalNode.newSession] - Session created by the Node. Id: d19b384521ad18ff9ac599a511368252, Caps: Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 111.0.5562.0, chrome: {chromedriverVersion: 110.0.5481.30 (aedb656755c4..., userDataDir: /tmp/.com.google.Chrome.EF9Exq}, goog:chromeOptions: {debuggerAddress: localhost:46621}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: LINUX, proxy: Proxy(), se:cdp: http://localhost:46621, se:cdpVersion: 111.0.5562.0, se:vncEnabled: true, se:vncLocalAddress: ws://172.22.0.3:7900, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:virtualAuthenticators: true}
+kijiji-helper-browser   | 01:09:42.352 INFO [LocalDistributor.newSession] - Session created by the Distributor. Id: d19b384521ad18ff9ac599a511368252 
+kijiji-helper-browser   |  Caps: Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 111.0.5562.0, chrome: {chromedriverVersion: 110.0.5481.30 (aedb656755c4..., userDataDir: /tmp/.com.google.Chrome.EF9Exq}, goog:chromeOptions: {debuggerAddress: localhost:46621}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: LINUX, proxy: Proxy(), se:bidiEnabled: false, se:cdp: ws://172.22.0.3:4444/sessio..., se:cdpVersion: 111.0.5562.0, se:vnc: ws://172.22.0.3:4444/sessio..., se:vncEnabled: true, se:vncLocalAddress: ws://172.22.0.3:7900, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:virtualAuthenticators: true}

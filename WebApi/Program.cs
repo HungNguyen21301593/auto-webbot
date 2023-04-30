@@ -96,10 +96,13 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        Console.WriteLine("Wait 20 seconds so browser started");
+        Thread.Sleep(20000);
+        
         using (var scope = app.Services.CreateScope())
         {
-            await scope.ServiceProvider.GetRequiredService<IStartupHelper>().Initialize();
+           await scope.ServiceProvider.GetRequiredService<IStartupHelper>().Initialize();
         }
-        app.Run();
+        await app.RunAsync();
     }
 }

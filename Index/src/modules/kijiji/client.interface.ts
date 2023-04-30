@@ -81,10 +81,15 @@ export class Client {
     }
 
     /**
+     * @param doCheckFireBase (optional) 
      * @return Success
      */
-    verify(httpContext?: HttpContext): Observable<DeviceStatus> {
-        let url_ = this.baseUrl + "/api/Device/verify";
+    verify(doCheckFireBase: boolean | undefined, httpContext?: HttpContext): Observable<DeviceStatus> {
+        let url_ = this.baseUrl + "/api/Device/verify?";
+        if (doCheckFireBase === null)
+            throw new Error("The parameter 'doCheckFireBase' cannot be null.");
+        else if (doCheckFireBase !== undefined)
+            url_ += "doCheckFireBase=" + encodeURIComponent("" + doCheckFireBase) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -263,6 +268,54 @@ export class Client {
     /**
      * @return Success
      */
+    screenshoot(httpContext?: HttpContext): Observable<void> {
+        let url_ = this.baseUrl + "/api/PostHistory/screenshoot";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processScreenshoot(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processScreenshoot(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processScreenshoot(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return Success
+     */
     settingGET(id: number, httpContext?: HttpContext): Observable<Setting> {
         let url_ = this.baseUrl + "/api/Setting/{id}";
         if (id === undefined || id === null)
@@ -414,7 +467,7 @@ export interface IChartItemViewModel {
 
 export class DeviceStatus implements IDeviceStatus {
     deviceInfo?: V3;
-    readonly status?: boolean;
+    readonly isVerified?: boolean;
     readonly isNotExpired?: boolean;
     readonly isVipDevice?: boolean;
     readonly isRePostLimitIsValid?: boolean;
@@ -431,7 +484,7 @@ export class DeviceStatus implements IDeviceStatus {
     init(_data?: any) {
         if (_data) {
             this.deviceInfo = _data["deviceInfo"] ? V3.fromJS(_data["deviceInfo"]) : <any>undefined;
-            (<any>this).status = _data["status"];
+            (<any>this).isVerified = _data["isVerified"];
             (<any>this).isNotExpired = _data["isNotExpired"];
             (<any>this).isVipDevice = _data["isVipDevice"];
             (<any>this).isRePostLimitIsValid = _data["isRePostLimitIsValid"];
@@ -448,7 +501,7 @@ export class DeviceStatus implements IDeviceStatus {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["deviceInfo"] = this.deviceInfo ? this.deviceInfo.toJSON() : <any>undefined;
-        data["status"] = this.status;
+        data["isVerified"] = this.isVerified;
         data["isNotExpired"] = this.isNotExpired;
         data["isVipDevice"] = this.isVipDevice;
         data["isRePostLimitIsValid"] = this.isRePostLimitIsValid;
@@ -458,7 +511,7 @@ export class DeviceStatus implements IDeviceStatus {
 
 export interface IDeviceStatus {
     deviceInfo?: V3;
-    status?: boolean;
+    isVerified?: boolean;
     isNotExpired?: boolean;
     isVipDevice?: boolean;
     isRePostLimitIsValid?: boolean;
@@ -467,6 +520,7 @@ export interface IDeviceStatus {
 export class LogTreeNode implements ILogTreeNode {
     name?: string | undefined;
     status?: LogTreeStatus;
+    created?: Date;
     children?: LogTreeNode[] | undefined;
 
     constructor(data?: ILogTreeNode) {
@@ -482,6 +536,7 @@ export class LogTreeNode implements ILogTreeNode {
         if (_data) {
             this.name = _data["name"];
             this.status = _data["status"];
+            this.created = _data["created"] ? new Date(_data["created"].toString()) : <any>undefined;
             if (Array.isArray(_data["children"])) {
                 this.children = [] as any;
                 for (let item of _data["children"])
@@ -501,6 +556,7 @@ export class LogTreeNode implements ILogTreeNode {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
         data["status"] = this.status;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
         if (Array.isArray(this.children)) {
             data["children"] = [];
             for (let item of this.children)
@@ -513,6 +569,7 @@ export class LogTreeNode implements ILogTreeNode {
 export interface ILogTreeNode {
     name?: string | undefined;
     status?: LogTreeStatus;
+    created?: Date;
     children?: LogTreeNode[] | undefined;
 }
 

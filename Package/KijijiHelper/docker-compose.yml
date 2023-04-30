@@ -1,9 +1,9 @@
-version: "3.9"
+version: "2.1"
 services:
   browser:
-    container_name: kijiji-helper-browser
-    image: selenium/standalone-chrome:dev
-    hostname: browser
+    container_name: browser
+    image: selenium/standalone-chrome:111.0
+    hostname: Hung
     shm_size: 2gb
     privileged: true
     networks:
@@ -12,36 +12,37 @@ services:
       - SE_SCREEN_WIDTH=1920
       - SE_SCREEN_HEIGHT=1080
       - SE_NODE_SESSION_TIMEOUT=21600
+    volumes:
+      - kijiji-helper-shared-volume:/app/images
     ports:
       - "4444:4444"
       - "7900:7900"
-    volumes:
-      - kijiji-helper-shared-volume:/app/images
 
   database:
     image: postgres:14.1-alpine
+    hostname: Hung
     container_name: kijiji-helper-database
+    ports:
+      - '5432:5432'
+    networks:
+          - web_net
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    ports:
-      - '5432:5432'
     volumes: 
       - kijiji-helper-db:/var/lib/postgresql/data
-    networks:
-          - web_net
 
   api:
     container_name: kijiji-helper-api
-    hostname: api
+    hostname: Hung
     image: hungnguyen991995/kijiji-helper-api:latest
     shm_size: 2gb
     privileged: true
-    networks:
-          - web_net
     depends_on: 
             - browser
             - database
+    networks:
+          - web_net
     ports:
       - "5252:5252"
     volumes:
@@ -49,21 +50,22 @@ services:
     environment:
       - TestMode=false
       - ASPNETCORE_URLS=http://+:5252
+      - REMOTE_DRIVER_URL=http://browser:4444/wd/hub
     
 
   index:
     container_name: kijiji-helper-index
-    hostname: index
+    hostname: Hung
     image: hungnguyen991995/kijiji-helper-index:latest
     shm_size: 2gb
     depends_on: 
             - api
-    networks:
-          - web_net
     ports:
       - "3000:8080"
       - "3001:8081"
-    
+    networks:
+          - web_net
+
 networks:
     web_net:
       external: false

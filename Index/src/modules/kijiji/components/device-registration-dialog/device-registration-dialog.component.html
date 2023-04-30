@@ -1,0 +1,35 @@
+<mat-card>
+  <mat-card-content>
+    <h1 mat-dialog-title>Your device registration has been expired</h1>
+    <span>
+      We apologize, but it appears that your device has either expired or reached the maximum limit for posts on our
+      platform.
+      If you wish to continue using the application, please request an extension.
+      <b>The extension fee is $5 USD for 30 additional reposts, and the more you pay, the more reposts you can
+        receive.</b>
+      <br>
+      <br>
+      Please note that your current repost count is <i>{{deviceStatus?.deviceInfo?.remainingPostLimit}}</i>,
+      and your device's expiration date is <i>{{getExpiredDate(deviceStatus?.deviceInfo?.expiredDate!)}}</i>.
+      We appreciate your understanding and look forward to assisting you with any further questions or concerns.
+    </span>
+    <div>
+      <mat-slider [min]="min" [max]="max" step="10" (change)="updatePayment()" [(ngModel)]="numberOfPostValue">
+      </mat-slider>
+      <mat-form-field class="example-form-field">
+        <mat-label>Reposts:</mat-label>
+        <input matInput type="number" (change)="updatePayment()" [(ngModel)]="numberOfPostValue" [min]="min"
+          [max]="max">
+      </mat-form-field>
+      <mat-form-field class="example-form-field">
+        <mat-label>Payment (USD):</mat-label>
+        <input matInput type="number" [(ngModel)]="payment" min="0" (change)="updatePosts()">
+      </mat-form-field>
+
+    </div>
+  </mat-card-content>
+</mat-card>
+<div mat-dialog-actions>
+  <button mat-raised-button (click)="refresh()" color="primary">Close</button>
+  <button mat-raised-button (click)="proceed()" color="primary">Place order</button>
+</div>

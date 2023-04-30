@@ -2,7 +2,7 @@ version: "3.9"
 services:
   browser:
     container_name: browser
-    image: selenium/standalone-chrome:dev
+    image: selenium/standalone-chrome:111.0
     hostname: browser
     shm_size: 2gb
     privileged: true
@@ -37,6 +37,7 @@ services:
     build: "./WebApi"
     shm_size: 2gb
     privileged: true
+    restart: on-failure
     networks:
           - web_net
     depends_on: 
@@ -49,6 +50,7 @@ services:
     environment:
       - TestMode=true
       - ASPNETCORE_URLS=http://+:5252
+      - REMOTE_DRIVER_URL=http://browser:4444/wd/hub
 
   index:
     container_name: index

@@ -12,8 +12,7 @@
           </mat-icon>
         </button>
         <mat-icon>{{getStatusButtonClass(node)}}</mat-icon>
-        <!-- <mat-spinner [hidden]="node.status!=='_2'" [diameter]="20"></mat-spinner> -->
-        {{node.created}} {{node.name}}
+        {{node.name}}
         
       </div>
       <div [class.example-tree-invisible]="!treeControl.isExpanded(node)"

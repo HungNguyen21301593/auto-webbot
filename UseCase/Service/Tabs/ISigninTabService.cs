@@ -9,5 +9,7 @@ namespace UseCase.Service.Tabs
     public interface ISigninTabService
     {
         Task Login(string email, string pass);
+        Task LoadForAppStartup();
+        Task Logout();
     }
 }

@@ -9,6 +9,7 @@ namespace Core.Model
     public enum KijijiExecuteType
     {
         ReadAds,
-        PostAdByTitle
+        PostAdByTitle,
+        Startup
     }
 }

@@ -48,7 +48,11 @@ namespace UseCase.Jobs
             post.Status = AdStatus.Started;
             await PostRepository.Update(post);
             await Task.Delay(TimeSpan.FromMinutes(setting.AdActiveInterval));
-            KijijiPostingService.Execute(KijijiExecuteType.PostAdByTitle, new ExecuteParams { Post = post });
+            KijijiPostingService.Execute(KijijiExecuteType.PostAdByTitle, new ExecuteParams
+            {
+                Post = post,
+                Setting = setting
+            });
             Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
         }
 

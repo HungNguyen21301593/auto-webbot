@@ -1,9 +1,8 @@
-﻿using Entities;
+﻿using Core.Model;
+using Entities;
 using Infastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Polly;
 
 namespace UseCase.Service
 {
@@ -15,13 +14,17 @@ namespace UseCase.Service
         private readonly ISettingRepository settingRepository;
         private readonly IPostRepository postRepository;
         private readonly DataContext dbContext;
+        private readonly IDeviceInfoChart deviceInfoChart;
+        private readonly IKijijiPostingService kijijiPostingService;
 
         public StartupHelper(IConfiguration configuration,
             IBrowserManagerService browserManagerService,
             ILogger<StartupHelper> logger,
             ISettingRepository settingRepository,
             IPostRepository postRepository,
-            DataContext dbContext)
+            DataContext dbContext,
+            IDeviceInfoChart deviceInfoChart,
+            IKijijiPostingService kijijiPostingService)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.browserManagerService = browserManagerService;
@@ -29,6 +32,8 @@ namespace UseCase.Service
             this.settingRepository = settingRepository ?? throw new ArgumentNullException(nameof(settingRepository));
             this.postRepository = postRepository ?? throw new ArgumentNullException(nameof(postRepository));
             this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            this.deviceInfoChart = deviceInfoChart ?? throw new ArgumentNullException(nameof(deviceInfoChart));
+            this.kijijiPostingService = kijijiPostingService ?? throw new ArgumentNullException(nameof(kijijiPostingService));
         }
         public async Task Initialize()
         {
@@ -36,6 +41,8 @@ namespace UseCase.Service
             await TryInitBrowsers();
             await AddSettingIfNotExisted();
             await RefreshAllFailedOrOnOnGoingPost();
+            await VerifyDevice();
+            await SignInAsInit();
         }
 
         private async Task AddSettingIfNotExisted()
@@ -83,8 +90,19 @@ namespace UseCase.Service
             foreach (var allFailedOrOnGoingPost in allFailedOrOnGoingPosts)
             {
                 allFailedOrOnGoingPost.Status = AdStatus.New;
+                allFailedOrOnGoingPost.stepLogs = new List<StepLog>();
             }
             await postRepository.UpdateRange(allFailedOrOnGoingPosts);
+        }
+
+        private async Task VerifyDevice()
+        {
+            await deviceInfoChart.Verify(doCheckFireBase: true);
+        }
+
+        private async Task SignInAsInit()
+        {
+            kijijiPostingService.Execute(KijijiExecuteType.Startup, new ExecuteParams());
         }
     }
 }

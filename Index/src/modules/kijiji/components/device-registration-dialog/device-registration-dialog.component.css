@@ -1,0 +1,11 @@
+button {
+  margin-right: 30%;
+}
+
+mat-slider {
+  width: 100%;
+}
+
+mat-form-field{
+  width: 50%;
+}

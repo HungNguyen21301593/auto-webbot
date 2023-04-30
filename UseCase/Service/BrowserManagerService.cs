@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Chromium;
+using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
+using System.Globalization;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
 
@@ -11,6 +15,8 @@ namespace UseCase.Service
     public class BrowserManagerService : IBrowserManagerService
     {
         public IConfiguration Configuration { get; }
+        public ILogger<BrowserManagerService> Logger { get; }
+
         private readonly object driverLock = new();
         private IWebDriver? Driver { get; set; }
         private Dictionary<string, string> TabNamesDictionary = new();
@@ -35,9 +41,10 @@ namespace UseCase.Service
             "--disable-features=NetworkService",
             };
 
-        public BrowserManagerService(IConfiguration configuration)
+        public BrowserManagerService(IConfiguration configuration, ILogger<BrowserManagerService> logger)
         {
             Configuration = configuration;
+            Logger = logger;
         }
 
         public IWebDriver GetDriver()
@@ -59,18 +66,22 @@ namespace UseCase.Service
         {
             try
             {
-                new DriverManager().SetUpDriver(new ChromeConfig());
+                new DriverManager().SetUpDriver(new ChromeConfig(), "101.0.4951.41");
             }
             catch (Exception)
             {
-                // Ignored
             }
             var options = new ChromeOptions();
             options.AddExcludedArgument("enable-automation");
-            options.AddAdditionalOption("useAutomationExtension", false);
             options.AddArguments(arguments);
             options.PageLoadStrategy = PageLoadStrategy.Normal;
-            var remoteDriver = new RemoteWebDriver(new Uri(Configuration["RemoveDriver:Url"] ?? string.Empty), options);
+            var settings = new RemoteSessionSettings(options);
+            var remoteDriverUrl = Environment.GetEnvironmentVariable("REMOTE_DRIVER_URL");
+            Logger.LogInformation($"Found REMOTE_DRIVER_URL: {remoteDriverUrl}");
+            var webdriverUrl = remoteDriverUrl ?? Configuration["RemoveDriver:Url"];
+            Logger.LogInformation($"Connecting to webdriver server {webdriverUrl}");
+            var remoteDriver = new RemoteWebDriver(new Uri(webdriverUrl ?? string.Empty), settings);
+            Logger.LogInformation($"Connected to webdriver server {webdriverUrl}...");
             Driver = remoteDriver ?? throw new ArgumentNullException($"Could not init web diver");
             return remoteDriver;
         }
@@ -88,7 +99,7 @@ namespace UseCase.Service
                 return;
             }
             jsExecutor.ExecuteScript("window.open();");
-            var tabHashCode = Driver.WindowHandles.Last();
+            var tabHashCode = Driver?.WindowHandles.Last();
             TabNamesDictionary.Add(tabName, tabHashCode);
         }
 
@@ -100,6 +111,13 @@ namespace UseCase.Service
                 throw new InvalidOperationException($"Could not get tab {tabName}");
             }
             return tab;
+        }
+
+        public void Restart()
+        {
+            Driver?.Quit();
+            TabNamesDictionary.Clear();
+            Driver = SetupNewInstance();
         }
     }
 }

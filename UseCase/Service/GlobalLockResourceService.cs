@@ -9,5 +9,6 @@ namespace UseCase.Service
     public class GlobalLockResourceService
     {
         public static object WebDriverLockResource = new();
+        public static Setting CurrentSetting = null;
     }
 }

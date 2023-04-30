@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Core.Model;
+﻿using Core.Model;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -77,7 +69,9 @@ namespace Infastructure.Repositories
 
         public async Task<List<Post>> GetAllFailedOrOnGoingPost()
         {
-            return await DataContext.Posts.Where(p => p.Status != AdStatus.PostSucceeded).ToListAsync();
+            return await DataContext.Posts.Where(p => p.Status != AdStatus.PostSucceeded)
+                .Include(p => p.stepLogs)
+                .ToListAsync();
         }
 
         public async Task<List<Post>> UpdateRange(List<Post> posts)

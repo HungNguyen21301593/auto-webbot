@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
 import { UtilService } from 'src/core-services/util.service';
-import { Client, DeviceStatus, V3 } from '../../client.interface';
+import { DeviceStatus } from '../../client.interface';
 import { DeviceRegistrationInfoService } from './device-registration-info.service';
 
 @Component({
@@ -11,27 +11,29 @@ import { DeviceRegistrationInfoService } from './device-registration-info.servic
 })
 export class DeviceRegistrationInfoComponent implements OnInit, OnDestroy {
   subscription?: Subscription;
+  devicesubscription?: Subscription;
   deviceStatus?: DeviceStatus;
 
-  constructor(private client: Client, public utilService: UtilService, private deviceRegistrationInfoService: DeviceRegistrationInfoService) { }
+  constructor(public utilService: UtilService, 
+    private deviceRegistrationInfoService: DeviceRegistrationInfoService,
+    ) { }
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.devicesubscription?.unsubscribe();
   }
 
   ngOnInit() {
-    this.verifyDevice();
+    this.deviceRegistrationInfoService.refetchWithFireBase(true);
     const source = interval(30000);
     this.subscription = source.subscribe(val => {
-      this.verifyDevice();
+      this.deviceRegistrationInfoService.refetchWithFireBase(false);
     });
-  }
-
-  private verifyDevice() {
-    this.deviceRegistrationInfoService.DeviceStatusObsererable.subscribe((deviceStatus: DeviceStatus | null) => {
-      if (deviceStatus) {
-        this.deviceStatus = deviceStatus;  
+    this.devicesubscription = this.deviceRegistrationInfoService.DeviceStatusObsererable.subscribe((deviceStatus: DeviceStatus | null) => {
+      if (!deviceStatus) {
+        return;
       }
-    });
+      this.deviceStatus = deviceStatus;
+    })
   }
 
   public FormatLocalDate(date: Date | undefined) {

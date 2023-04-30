@@ -1,0 +1,10 @@
+// copy file to server
+// run docker compose
+4g]QHXBzb[n,(Ez}
+
+scp -r C:\Personal\Projects\autowebbot\Package\KijijiHelper root@149.248.58.114:/root/kijiji
+ssh root@149.248.58.114
+cd /root/kijiji/KijijiHelper
+docker-compose down -v
+docker system prune -a
+docker-compose up -d --renew-anon-volumes --build --force-recreate

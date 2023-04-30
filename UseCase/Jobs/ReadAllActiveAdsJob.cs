@@ -31,7 +31,7 @@ namespace UseCase.Jobs
             await context.Scheduler.RescheduleJob(newTrigger.Key, newTrigger);
             //Logger.LogInformation($"Job {GetType().Name} rescheduled with {setting.ReadInterval}");
 
-            KijijiPostingService.Execute(KijijiExecuteType.ReadAds, new ExecuteParams{Page = setting.PageToTrigger});
+            KijijiPostingService.Execute(KijijiExecuteType.ReadAds, new ExecuteParams { Page = setting.PageToTrigger, Setting = setting });
             //Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
         }
 

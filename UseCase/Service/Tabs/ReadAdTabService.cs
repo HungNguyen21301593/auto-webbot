@@ -9,6 +9,7 @@ using Entities;
 using Infastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using NLog.Fluent;
+using Framework.WebElements;
 
 namespace UseCase.Service.Tabs
 {
@@ -57,7 +58,9 @@ namespace UseCase.Service.Tabs
         {
             await Switch();
             var result = new List<string>();
+            Thread.Sleep(SleepIntervalBetweenEachAcion);
             var aditems = WebDriver.FindElements(AdItemsLocator);
+            
             foreach (var aditem in aditems)
             {
                 var pageElement = aditem.FindElement(AdPageLocator);
@@ -89,9 +92,15 @@ namespace UseCase.Service.Tabs
             }
             catch (Exception e)
             {
-                Logger.LogWarning($"There was an error finding active ad with title {title}");
+                Logger.LogWarning($"Could not find active ad with title {title}");
                 return false;
             }
+        }
+
+        public async Task<bool> IsAdExceedPage(string title, long page)
+        {
+            var ads = await ReadAllAdTitlesExceedPage(page);
+            return ads.Any(ad => ad.Contains(title));
         }
 
         public async Task<AdDetails> ReadAdContentByTitle(string title, Post post)

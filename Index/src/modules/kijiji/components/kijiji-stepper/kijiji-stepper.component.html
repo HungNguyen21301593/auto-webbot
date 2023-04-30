@@ -13,14 +13,15 @@
             required>
         </mat-form-field>
         <div>
-          <button mat-button matStepperNext>Next</button>
+          <button mat-raised-button matStepperNext>Next</button>
         </div>
       </form>
     </mat-step> -->
     <mat-step [stepControl]="accountFormGroup">
       <form [formGroup]="accountFormGroup">
         <ng-template matStepLabel>Please insert your Kijiji account:</ng-template>
-        <p>As previously discussed, your Kijiji account will remain confidential and will only be saved on your personal computer.</p>
+        <p>As previously discussed, your Kijiji account will remain confidential and will only be saved on your personal
+          computer.</p>
         <mat-form-field appearance="fill">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="emailCtrl" placeholder="kijiji@gmail.com" required>
@@ -30,36 +31,55 @@
           <input matInput type="password" formControlName="passwordCtrl" placeholder="kijiji@123" required>
         </mat-form-field>
         <div>
-          <button mat-button matStepperPrevious>Back</button>
-          <button mat-button matStepperNext>Next</button>
+          <button mat-raised-button matStepperPrevious>Back</button>
+          <button mat-raised-button matStepperNext>Next</button>
         </div>
       </form>
     </mat-step>
+
     <mat-step [stepControl]="repostTriggerFormGroup">
       <form [formGroup]="repostTriggerFormGroup">
         <ng-template matStepLabel>
           When do you like to trigger the bump up?
         </ng-template>
-        <p>
-          For instance, if you want your ad to appear on the first page, please enter the number '2'.
-        </p>
-        <mat-form-field appearance="fill">
-          <mat-label>When exceeds page (minimum 2):</mat-label>
-          <input matInput min="2" type="number" formControlName="repostTriggerCtrl" placeholder="2" required>
-        </mat-form-field>
+
+        <mat-radio-group class="radio-group" formControlName="triggerModeControl" aria-labelledby="example-radio-group-label" class="example-radio-group"
+          [(ngModel)]="selectedMode" (change)="changeSelectMode()">
+          <mat-radio-button [matTooltip]="getDescriptionText(triggerMode)"  matTooltipPosition="right" class="radio-button" class="example-radio-button" *ngFor="let triggerMode of triggerModes" [value]="triggerMode">
+            {{triggerMode}}
+          </mat-radio-button>
+        </mat-radio-group>
+
         <div>
-          <button mat-button matStepperPrevious>Back</button>
-          <button mat-button matStepperNext>Next</button>
+          <mat-form-field appearance="fill">
+            <mat-label>When Surpasses Page:</mat-label>
+            <input matInput min="1" type="number" formControlName="pageToTriggerCtrl" placeholder="1" required>
+          </mat-form-field>
+        </div>
+
+        <div>
+          <mat-form-field appearance="fill">
+            <mat-label>Every (minimum 120 minutes):</mat-label>
+            <input matInput [min]="minRepostvalue" type="number" formControlName="repostScheduleCtrl" placeholder="minRepostvalue" required>
+          </mat-form-field>
+        </div>
+
+        <div>
+          <button mat-raised-button matStepperPrevious>Back</button>
+          <button mat-raised-button matStepperNext>Next</button>
         </div>
       </form>
     </mat-step>
+
+
     <mat-step>
       <ng-template matStepLabel>Done</ng-template>
       <p>You are now done. Please submit to apply the setting.</p>
       <div>
-        <button mat-button matStepperPrevious>Back</button>
-        <button mat-button type="submit" (click)="submit()">Submit</button>
+        <button mat-raised-button matStepperPrevious>Back</button>
+        <button mat-raised-button type="submit" (click)="submit()">Submit</button>
       </div>
     </mat-step>
+
   </mat-stepper>
 </div>

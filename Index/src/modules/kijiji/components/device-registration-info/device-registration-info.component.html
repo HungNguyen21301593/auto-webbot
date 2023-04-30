@@ -1,20 +1,22 @@
 <div class="row around-xs main">
-  <div [hidden]="deviceStatus?.status">
+  <div [hidden]="deviceStatus?.isVerified">
     <mat-icon  [color]="'warn'">error</mat-icon>
   </div>
-  <div [hidden]="!deviceStatus?.status">
-    <mat-icon  [color]="'primary'">verified_user</mat-icon>
+  <div [hidden]="!deviceStatus?.isVerified">
+    <mat-icon  [color]="'accent'">verified_user</mat-icon>
   </div>
-  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.status" [disabled]="true">
+  <mat-slide-toggle [color]="'accent'" [checked]="this.deviceStatus?.isVerified" [disabled]="true">
     Is Device Verified?
   </mat-slide-toggle>
-  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.isVipDevice" [disabled]="true">
+  <mat-slide-toggle [color]="'accent'" [checked]="this.deviceStatus?.isVipDevice" [disabled]="true">
     Is VIP Device?
   </mat-slide-toggle>
-  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.isRePostLimitIsValid" [disabled]="true">
+  <mat-slide-toggle [color]="'accent'" [checked]="this.deviceStatus?.isRePostLimitIsValid" [disabled]="true">
     Repost remaning? ({{deviceStatus?.deviceInfo?.remainingPostLimit}} remainning)
   </mat-slide-toggle>
-  <mat-slide-toggle [color]="'primary'" [checked]="this.deviceStatus?.isNotExpired" [disabled]="true">
-    Is Not Expired? (Expired Date: {{utilService.formatLocalDisplayDate(deviceStatus?.deviceInfo?.expiredDate)}})
+  <mat-slide-toggle [color]="'accent'" [checked]="this.deviceStatus?.isNotExpired" [disabled]="true">
+    Is Not Expired? (Expired Date: {{deviceStatus?.deviceInfo?.expiredDate?
+      utilService.formatLocalDisplayDate(deviceStatus?.deviceInfo?.expiredDate):''
+    }})
   </mat-slide-toggle>
 </div>

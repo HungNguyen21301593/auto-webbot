@@ -15,5 +15,6 @@ namespace UseCase.Service
         WebDriverWait GetDriverWaiter();
         void OpenNewTabAndSetName(string tabName);
         string GetTabByName(string tabName);
+        void Restart();
     }
 }

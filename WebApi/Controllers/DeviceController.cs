@@ -1,4 +1,5 @@
 ﻿using Core.Model;
+using Entities;
 using FireBaseAuthenticator.KijijiHelperServices;
 using FireBaseAuthenticator.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,11 @@ namespace WebApi.Controllers
     {
         private readonly IDeviceInfoChart deviceInfoChart;
 
-        public IDeviceRegistrationService AuthenticatorService { get; }
+        public IDeviceRegistrationService DeviceRegistrationService { get; }
 
-        public DeviceController(IDeviceRegistrationService authenticatorService, IDeviceInfoChart deviceInfoChart)
+        public DeviceController(IDeviceRegistrationService deviceRegistrationService, IDeviceInfoChart deviceInfoChart)
         {
-            AuthenticatorService = authenticatorService ?? throw new ArgumentNullException(nameof(authenticatorService));
+            DeviceRegistrationService = deviceRegistrationService ?? throw new ArgumentNullException(nameof(deviceRegistrationService));
             this.deviceInfoChart = deviceInfoChart;
         }
 
@@ -26,16 +27,14 @@ namespace WebApi.Controllers
         [Route("get")]
         public async Task<V3> Get()
         {
-            return await AuthenticatorService.GetDeviceInformation();
+            return await DeviceRegistrationService.GetDeviceInformation();
         }
 
         [HttpPost]
         [Route("verify")]
-        public async Task<DeviceStatus> Verify()
+        public async Task<DeviceStatus> Verify(bool doCheckFireBase)
         {
-            var deviceInfo = await AuthenticatorService.GetDeviceInformation();
-            await deviceInfoChart.Save(deviceInfo);
-            return new DeviceStatus(deviceInfo);
+            return await deviceInfoChart.Verify(doCheckFireBase);
         }
 
         [HttpGet]

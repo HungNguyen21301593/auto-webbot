@@ -9,6 +9,7 @@ namespace UseCase.Service
 {
     public partial class KijijiPostingService : IKijijiPostingService
     {
+        private readonly IFireBaseLoggingService fireBaseLoggingService;
         private IBrowserManagerService BrowserManager { get; }
         public ISigninTabService SigninService { get; }
         private IReadAdTabService ReadAdTabService { get; }
@@ -19,7 +20,7 @@ namespace UseCase.Service
         public ISettingRepository SettingRepository { get; }
         public ILogger<KijijiPostingService> Logger { get; }
         public IStepLogRepository StepLogRepository { get; }
-        public IDeviceRegistrationService DeviceRegistrationService { get; }
+        public IDeviceInfoChart DeviceInfoChart { get; }
         public GlobalLockResourceService GlobalLockResourceService { get; }
 
         public KijijiPostingService(IBrowserManagerService browserManager,
@@ -32,9 +33,11 @@ namespace UseCase.Service
             ISettingRepository settingRepository,
             ILogger<KijijiPostingService> logger,
             IStepLogRepository stepLogRepository,
-            IDeviceRegistrationService deviceRegistrationService,
+            IDeviceInfoChart deviceInfoChart,
+            IFireBaseLoggingService fireBaseLoggingService,
             GlobalLockResourceService globalLockResourceService)
         {
+            this.fireBaseLoggingService = fireBaseLoggingService ?? throw new ArgumentNullException(nameof(fireBaseLoggingService));
             ReadAdTabService = readAdTabService;
             BrowserManager = browserManager ?? throw new ArgumentNullException(nameof(browserManager));
             SigninService = signinService ?? throw new ArgumentNullException(nameof(signinService));
@@ -45,7 +48,7 @@ namespace UseCase.Service
             SettingRepository = settingRepository;
             Logger = logger;
             StepLogRepository = stepLogRepository;
-            DeviceRegistrationService = deviceRegistrationService ?? throw new ArgumentNullException(nameof(deviceRegistrationService));
+            DeviceInfoChart = deviceInfoChart ?? throw new ArgumentNullException(nameof(deviceInfoChart));
             GlobalLockResourceService = globalLockResourceService;
         }
 
@@ -55,13 +58,26 @@ namespace UseCase.Service
             {
                 try
                 {
+                    var verify = DeviceInfoChart.Verify().Result;
+                    if (!verify.IsVerified)
+                    {
+                        Logger.LogInformation("The current device is not verified or expired. So return");
+                        return;
+                    }
+
+                    SetupTabs();
                     switch (kijijiExecuteType)
                     {
                         case KijijiExecuteType.ReadAds:
-                            ReadAllAdExceedPage(@params.Page ?? throw new ArgumentNullException(nameof(@params.Page))).Wait();
+                            TryLogInAndLogOutIfNewAccountSetting(@params.Setting).Wait();
+                            ReadAllAdExceedPage(0).Wait();
                             break;
                         case KijijiExecuteType.PostAdByTitle:
-                            StartRepostingWithTitle(@params.Post ?? throw new ArgumentNullException(nameof(@params.Post))).Wait();
+                            TryLogInAndLogOutIfNewAccountSetting(@params.Setting).Wait();
+                            StartRepostingWithTitle(@params.Post, @params.Setting).Wait();
+                            break;
+                        case KijijiExecuteType.Startup:
+                            SigninService.LoadForAppStartup().Wait();
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(kijijiExecuteType), kijijiExecuteType, null);
@@ -69,6 +85,7 @@ namespace UseCase.Service
                 }
                 catch (Exception e)
                 {
+                    fireBaseLoggingService.LogError(e.Message);
                     Logger.LogInformation(e.Message);
                 }
             }
