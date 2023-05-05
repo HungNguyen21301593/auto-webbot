@@ -44,6 +44,7 @@ internal class Program
         builder.Services.AddTransient<IStepLogRepository, StepLogRepository>();
         builder.Services.AddTransient<ISettingRepository, SettingRepository>();
         builder.Services.AddTransient<IDeviceRegistrationRepository, DeviceRegistrationRepository>();
+        builder.Services.AddTransient<IJobManagerService, JobManagerService>();
 
         builder.Services.AddTransient<KijijiActionHelper>();
         builder.Services.AddControllers();
@@ -52,19 +53,7 @@ internal class Program
         builder.Services.AddQuartz(q =>
         {
             q.UseMicrosoftDependencyInjectionJobFactory();
-            var readJobKey = new JobKey(nameof(ReadAllActiveAdsJob));
-            q.AddJob<ReadAllActiveAdsJob>(opts => opts.WithIdentity(readJobKey));
-            q.AddTrigger(opts => opts
-                .ForJob(readJobKey)
-                .WithIdentity(nameof(ReadAllActiveAdsJob))
-                .WithSimpleSchedule(s => s.RepeatForever().WithInterval(TimeSpan.FromMinutes(1)).Build()));
-
-            var postJobKey = new JobKey(nameof(RePostAdByTitleJob));
-            q.AddJob<RePostAdByTitleJob>(opts => opts.WithIdentity(postJobKey));
-            q.AddTrigger(opts => opts
-                .ForJob(postJobKey)
-                .WithIdentity(nameof(RePostAdByTitleJob))
-                .WithSimpleSchedule(s => s.RepeatForever().WithInterval(TimeSpan.FromMinutes(1)).Build()));
+            q.UseDefaultThreadPool(3);
         });
 
         builder.Services.AddQuartzServer(options =>
@@ -96,8 +85,8 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        Console.WriteLine("Wait 20 seconds so browser started");
-        Thread.Sleep(20000);
+        Console.WriteLine("Wait 60 seconds so browser started");
+        Thread.Sleep(60000);
         
         using (var scope = app.Services.CreateScope())
         {

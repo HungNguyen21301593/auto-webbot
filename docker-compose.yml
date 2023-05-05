@@ -33,7 +33,7 @@ services:
 
   api:
     container_name: api
-    hostname: ${hostname}
+    hostname: ${HOSTNAME}
     build: "./WebApi"
     shm_size: 2gb
     privileged: true

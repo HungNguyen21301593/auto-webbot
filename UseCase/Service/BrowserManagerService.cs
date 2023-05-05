@@ -78,7 +78,7 @@ namespace UseCase.Service
             var settings = new RemoteSessionSettings(options);
             var remoteDriverUrl = Environment.GetEnvironmentVariable("REMOTE_DRIVER_URL");
             Logger.LogInformation($"Found REMOTE_DRIVER_URL: {remoteDriverUrl}");
-            var webdriverUrl = remoteDriverUrl ?? Configuration["RemoveDriver:Url"];
+            var webdriverUrl = remoteDriverUrl ?? Configuration["RemoteDriver:Url"];
             Logger.LogInformation($"Connecting to webdriver server {webdriverUrl}");
             var remoteDriver = new RemoteWebDriver(new Uri(webdriverUrl ?? string.Empty), settings);
             Logger.LogInformation($"Connected to webdriver server {webdriverUrl}...");

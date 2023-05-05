@@ -63,11 +63,11 @@ namespace UseCase.Service
                 KijijiPassword = configuration["KijijiAccount:Pass"],
                 RegistrationId = Guid.Parse(configuration["RegistrationId"]),
                 PageToTrigger = long.Parse(configuration["PageToTrigger"]),
-                SleepInterval = int.Parse(configuration["RemoveDriver:SleepInterval"]),
-                ReadInterval = int.Parse(configuration["RemoveDriver:ReadInterval"]),
-                RePostInterval = int.Parse(configuration["RemoveDriver:RePostInterval"]),
-                AdActiveInterval = int.Parse(configuration["RemoveDriver:AdActiveInterval"]),
-                WaitAfterDeleteInterval = int.Parse(configuration["RemoveDriver:WaitAfterDeleteInterval"]),
+                SleepInterval = int.Parse(configuration["RemoteDriver:SleepInterval"]),
+                ReadInterval = int.Parse(configuration["RemoteDriver:ReadInterval"]),
+                RePostInterval = int.Parse(configuration["RemoteDriver:RePostInterval"]),
+                AdActiveInterval = int.Parse(configuration["RemoteDriver:AdActiveInterval"]),
+                WaitAfterDeleteInterval = int.Parse(configuration["RemoteDriver:WaitAfterDeleteInterval"]),
             };
             await settingRepository.Create(newSetting);
         }
@@ -76,7 +76,7 @@ namespace UseCase.Service
         {
             try
             {
-                browserManagerService.GetDriver();
+               
             }
             catch (Exception e)
             {

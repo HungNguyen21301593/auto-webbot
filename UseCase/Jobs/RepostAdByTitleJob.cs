@@ -29,13 +29,9 @@ namespace UseCase.Jobs
         public async Task Execute(IJobExecutionContext context)
         {
             var jobId = Guid.NewGuid();
-            //Logger.LogInformation($"Job {GetType().Name} started | Id: {jobId}");
+            Logger.LogInformation($"Job started {GetType().Name} | Id: {jobId}");
             var setting = await SettingRepository.Read();
             if (setting is null) { return; }
-            var newTrigger =
-                ConstructTrigger(context.Trigger.GetTriggerBuilder(), setting.RePostInterval);
-            await context.Scheduler.RescheduleJob(newTrigger.Key, newTrigger);
-            //Logger.LogInformation($"Job rescheduled {GetType().Name} with {setting.RePostInterval}");
             var post = await PostRepository.GetNextAdToPost();
             if (post is null)
             {
@@ -54,14 +50,6 @@ namespace UseCase.Jobs
                 Setting = setting
             });
             Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
-        }
-
-        private static ITrigger ConstructTrigger(TriggerBuilder triggerBuilder, long interval)
-        {
-            return triggerBuilder.WithSimpleSchedule(s => s
-                    .RepeatForever()
-                    .WithInterval(TimeSpan.FromMinutes(interval)))
-                .Build();
         }
     }
 }

@@ -1,3 +1,3 @@
-docker compose down -v
-docker-compose up -d --renew-anon-volumes --build --force-recreate
+docker-compose --env-file env down --renew-anon-volumes --build --force-recreate
+docker-compose --env-file env up -d --renew-anon-volumes --build --force-recreate
 set /p DUMMY=Hit ENTER to exit...

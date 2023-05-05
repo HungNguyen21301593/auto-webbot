@@ -65,7 +65,7 @@ namespace UseCase.Service
                         return;
                     }
 
-                    SetupTabs();
+                    SetupTabs().Wait();
                     switch (kijijiExecuteType)
                     {
                         case KijijiExecuteType.ReadAds:

@@ -24,23 +24,10 @@ namespace UseCase.Jobs
         public async Task Execute(IJobExecutionContext context)
         {
             var jobId = Guid.NewGuid();
-            //Logger.LogInformation($"Job {GetType().Name} started | Id: {jobId}");
+            Logger.LogInformation($"Job started {GetType().Name} | Id: {jobId}");
             var setting = await SettingRepository.Read();
-            var newTrigger =
-                ConstructTrigger(context.Trigger.GetTriggerBuilder(), setting.ReadInterval);
-            await context.Scheduler.RescheduleJob(newTrigger.Key, newTrigger);
-            //Logger.LogInformation($"Job {GetType().Name} rescheduled with {setting.ReadInterval}");
-
             KijijiPostingService.Execute(KijijiExecuteType.ReadAds, new ExecuteParams { Page = setting.PageToTrigger, Setting = setting });
-            //Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
-        }
-
-        private static ITrigger ConstructTrigger(TriggerBuilder triggerBuilder, long interval)
-        {
-            return triggerBuilder.WithSimpleSchedule(s => s
-                    .RepeatForever()
-                    .WithInterval(TimeSpan.FromMinutes(interval)))
-                .Build();
+            Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
         }
     }
 }

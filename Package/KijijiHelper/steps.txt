@@ -8,3 +8,6 @@ cd /root/kijiji/KijijiHelper
 docker-compose down -v
 docker system prune -a
 docker-compose up -d --renew-anon-volumes --build --force-recreate
+
+// Stop all containers
+ docker stop $(docker ps -a -q)

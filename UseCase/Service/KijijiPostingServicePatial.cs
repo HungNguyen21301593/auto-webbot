@@ -62,6 +62,7 @@ namespace UseCase.Service
             if (title is null)
             {
                 Logger.LogInformation($"Could not get the title from the saved ads on db with id {post.Id}, content: {post.AdDetailJson}");
+                await ResetPostStatusAndSteps(existingPost);
                 return;
             }
             existingPost.stepLogs = new List<StepLog>();
@@ -71,32 +72,60 @@ namespace UseCase.Service
             var isAdExceedPage = await ReadAdTabService.IsAdExceedPage(title, paramsSetting.PageToTrigger);
             if (!isAdAlreadyPresent)
             {
-                Logger.LogInformation($"Ad with title {title} is not present so procede repost.");
-                await ProceedRePost(existingPost, title);
+                await ProceedRepostOnly(existingPost, title);
                 return;
             }
             if (isAdAlreadyPresent && isAdExceedPage)
             {
-                Logger.LogInformation($"Ad with title {title} is present and exceed page {paramsSetting.PageToTrigger}, so proceed delete, then repost.");
-                await ProceedDelete(existingPost, title);
-                await ProceedRePost(existingPost, title);
+                await ProceedDeleteThenRepost(existingPost, title,paramsSetting.PageToTrigger);
                 return;
             }
 
             Logger.LogInformation($"Ad with title {title} is present and NOT exceed page {paramsSetting.PageToTrigger}, so do nothing, return.");
+            await ResetPostStatusAndSteps(existingPost);
         }
 
-        private async Task ProceedRePost(Post existingPost, string title)
+        private async Task ProceedRepostOnly(Post existingPost, string title)
+        {
+            Logger.LogInformation($"Ad with title {title} is not present so procede repost.");
+            var postSuccess = await ProceedRePost(existingPost, title);
+            if (!postSuccess)
+            {
+                await ResetPostStatusAndSteps(existingPost);
+            }
+        }
+
+        private async Task ProceedDeleteThenRepost(Post existingPost, string title, long Page)
+        {
+            Logger.LogInformation($"Ad with title {title} is present and exceed page {Page}, so proceed delete, then repost.");
+            await ProceedDelete(existingPost, title);
+            var postSuccess = await ProceedRePost(existingPost, title);
+            if (!postSuccess)
+            {
+                await ResetPostStatusAndSteps(existingPost);
+            }
+        }
+
+        private async Task<bool> ProceedRePost(Post existingPost, string title)
         {
             await PostTabService.SubmitCategories(existingPost);
             await PostTabService.InputAdDetails(existingPost);
             existingPost.Status = await GetFinalPostStatus(existingPost.Id);
             await PostRepository.Update(existingPost);
+
+            if (existingPost.Status != AdStatus.PostSucceeded)
+            {
+                Logger.LogInformation("******************************************************");
+                Logger.LogInformation($"Failed reposting ad with title {title}");
+                Logger.LogInformation("******************************************************");
+                return false;
+            }
+
             Logger.LogInformation("******************************************************");
             Logger.LogInformation($"Done reposting ad with title {title}");
             Logger.LogInformation("******************************************************");
-
             await DeviceInfoChart.UpdateRemainingPostAndSaveDeviceInfo();
+            return true;
         }
 
         private async Task ProceedDelete(Post existingPost, string title)
@@ -185,6 +214,13 @@ namespace UseCase.Service
             Logger.LogInformation("******************************************************");
             Logger.LogInformation("Done ReadAllAd");
             Logger.LogInformation("******************************************************");
+        }
+
+        private async Task ResetPostStatusAndSteps(Post post)
+        {
+            post.Status = AdStatus.New;
+            post.stepLogs = new List<StepLog>();
+            await PostRepository.Update(post);
         }
 
         private async Task SetupTabs()

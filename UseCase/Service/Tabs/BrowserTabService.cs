@@ -29,7 +29,7 @@ namespace UseCase.Service.Tabs
             BrowserManagerService = browserManagerService;
             WebDriver = BrowserManagerService.GetDriver();
             WebWaiter = BrowserManagerService.GetDriverWaiter();
-            SleepIntervalBetweenEachAcion = TimeSpan.FromSeconds(double.Parse(configuration["RemoveDriver:SleepInterval"] ?? "0"));
+            SleepIntervalBetweenEachAcion = TimeSpan.FromSeconds(double.Parse(configuration["RemoteDriver:SleepInterval"] ?? "0"));
             TestMode = bool.Parse(Environment.GetEnvironmentVariable("TestMode") ?? configuration["TestMode"] ?? "true");
             BaseTabUrl = baseTabUrl ?? throw new ArgumentNullException(nameof(baseTabUrl));
         }
