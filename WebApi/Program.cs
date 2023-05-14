@@ -53,7 +53,7 @@ internal class Program
         builder.Services.AddQuartz(q =>
         {
             q.UseMicrosoftDependencyInjectionJobFactory();
-            q.UseDefaultThreadPool(3);
+            q.UseDefaultThreadPool(10);
         });
 
         builder.Services.AddQuartzServer(options =>
@@ -63,7 +63,12 @@ internal class Program
 
 
         builder.Services
-            .AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase")));
+            .AddDbContext<DataContext>(
+            optionsBuilder =>
+            {
+                optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase"), options => options.EnableRetryOnFailure(10, TimeSpan.FromSeconds(10), null));
+            }
+            );
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
         builder.Services.AddLogging(opt =>
@@ -91,6 +96,7 @@ internal class Program
         using (var scope = app.Services.CreateScope())
         {
            await scope.ServiceProvider.GetRequiredService<IStartupHelper>().Initialize();
+            await scope.ServiceProvider.GetRequiredService<IJobManagerService>().ReScheduleJobsWithLatestSetting();
         }
         await app.RunAsync();
     }

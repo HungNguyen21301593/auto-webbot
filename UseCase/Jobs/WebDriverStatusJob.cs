@@ -11,6 +11,7 @@ namespace UseCase.Jobs
     {
         public ILogger<WebDriverStatusJob> Logger { get; }
         public IBrowserManagerService BrowserManagerService { get; }
+        public static readonly JobKey Key = new JobKey(nameof(WebDriverStatusJob));
 
         public WebDriverStatusJob(ILogger<WebDriverStatusJob> Logger, IBrowserManagerService browserManagerService)
         {
@@ -26,8 +27,8 @@ namespace UseCase.Jobs
                 {
                     var driver = BrowserManagerService.GetDriver();
                     var url = driver.Url;
+                    Logger.LogInformation($"Driver is on, url: {url}");
                 });
-                Logger.LogInformation("Driver is on");
             }
             catch (Exception)
             {

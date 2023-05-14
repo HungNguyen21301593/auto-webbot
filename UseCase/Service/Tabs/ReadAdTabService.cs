@@ -24,7 +24,7 @@ namespace UseCase.Service.Tabs
         private By SearchAdByTitleLocator;
         private By EditAdLocator = By.CssSelector("button[class*=editButton]");
         private By categoriesLocators1 = By.CssSelector("span[class*='breadcrumb-']");
-        private By adtitleLocator = By.CssSelector("h1[class*='title']");
+        private By adtitleLocator = By.Id("postad-title");
         private By desLocator = By.Id("pstad-descrptn");
         private By tagsLocators = By.CssSelector("li[class*='tagItem']");
         private By addressLocator = By.Id("servicesLocationInput");
@@ -72,7 +72,7 @@ namespace UseCase.Service.Tabs
                     continue;
                 }
                 var titleElement = aditem.FindElement(AdTitlesLocator);
-                result.Add(titleElement.Text);
+                result.Add(titleElement.GetAttribute("innerText").Trim());
             }
             return result;
         }
@@ -82,7 +82,7 @@ namespace UseCase.Service.Tabs
             try
             {
                 await Switch();
-                SearchAdByTitleLocator = By.XPath($"//a[contains(text(),\"{title}\")]");
+                SearchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title}\")]");
                 var adTitleElement = WebWaiter
                     .Until(SeleniumExtras
                         .WaitHelpers
@@ -106,7 +106,7 @@ namespace UseCase.Service.Tabs
         public async Task<AdDetails> ReadAdContentByTitle(string title, Post post)
         {
             await Switch();
-            SearchAdByTitleLocator = By.XPath($"//a[contains(text(),\"{title}\")]");
+            SearchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title}\")]");
             var adTitleElement = WebWaiter
                 .Until(SeleniumExtras
                     .WaitHelpers
@@ -129,13 +129,7 @@ namespace UseCase.Service.Tabs
                 return adDetails;
             }, post, StepType.ReadDynamicText);
             
-            await _kijijiActionHelper.ExecuteAndSaveResult(() =>
-            {
-                Thread.Sleep(SleepIntervalBetweenEachAcion);
-                ReadAdTitle(adDetails);
-                Logger.LogInformation($"ReadAdTitle {JsonConvert.SerializeObject(adDetails)}");
-                return adDetails;
-            }, post, StepType.ReadTitle);
+            
 
             Thread.Sleep(SleepIntervalBetweenEachAcion);
             var editAd = WebWaiter
@@ -144,6 +138,14 @@ namespace UseCase.Service.Tabs
                     .ExpectedConditions
                     .ElementToBeClickable(EditAdLocator));
             editAd.Click();
+
+            await _kijijiActionHelper.ExecuteAndSaveResult(() =>
+            {
+                Thread.Sleep(SleepIntervalBetweenEachAcion);
+                ReadAdTitle(adDetails);
+                Logger.LogInformation($"ReadAdTitle {JsonConvert.SerializeObject(adDetails)}");
+                return adDetails;
+            }, post, StepType.ReadTitle);
 
             await _kijijiActionHelper.ExecuteAndSaveResult(() =>
             {
@@ -427,7 +429,7 @@ namespace UseCase.Service.Tabs
             var items = WebDriver.FindElements(adtitleLocator);
             if (items.Any())
             {
-                adDetails.AdTitle = items.First().Text;
+                adDetails.AdTitle = items.First().GetAttribute("value");
             }
         }
 

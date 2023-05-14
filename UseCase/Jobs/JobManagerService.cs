@@ -1,9 +1,8 @@
 ﻿using Entities;
 using Infastructure.Repositories;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Polly;
 using Quartz;
+using static Quartz.Logging.OperationName;
 
 namespace UseCase.Jobs
 {
@@ -12,7 +11,8 @@ namespace UseCase.Jobs
         private readonly ISettingRepository settingRepository;
         private readonly ISchedulerFactory schedulerFactory;
         private readonly ILogger<JobManagerService> logger;
-        private Dictionary<string,Type> Jobs;
+        private Dictionary<JobKey,Type> Jobs;
+        private readonly string ScheduleName = "auto-webbot";
 
         public JobManagerService(ISettingRepository settingRepository, 
             ISchedulerFactory schedulerFactory, 
@@ -21,71 +21,83 @@ namespace UseCase.Jobs
             this.settingRepository = settingRepository ?? throw new ArgumentNullException(nameof(settingRepository));
             this.schedulerFactory = schedulerFactory ?? throw new ArgumentNullException(nameof(schedulerFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            Jobs = new Dictionary<string, Type> {
-                {nameof(ReadAllActiveAdsJob), typeof(ReadAllActiveAdsJob) },
-                {nameof(RePostAdByTitleJob), typeof(RePostAdByTitleJob) },
-                {nameof(WebDriverStatusJob), typeof(WebDriverStatusJob) },
+            Jobs = new Dictionary<JobKey, Type> {
+                {ReadAllActiveAdsJob.Key, typeof(ReadAllActiveAdsJob) },
+                {RePostAdByTitleJob.Key, typeof(RePostAdByTitleJob) },
+                {WebDriverStatusJob.Key, typeof(WebDriverStatusJob) },
             };
         }
 
 
         public async Task ReScheduleJobsWithLatestSetting()
         {
-            var newSetting = await settingRepository.Read();
-            var schedulers = await schedulerFactory.GetAllSchedulers();
-            foreach (var scheduler in schedulers)
+            var setting = await settingRepository.Read();
+            if (setting == null)
             {
-                await scheduler.Shutdown(true);
+                logger.LogInformation($"There is no setting available on db so no job will be scheduled");
+                return;
             }
-            logger.LogInformation($"All jobs shutdown");
+            var guid = Guid.NewGuid();
+            var newScheduler = await schedulerFactory.GetScheduler();
 
-            var random = new Random();
             foreach (var job in Jobs)
             {
-                var scheduler = await schedulerFactory.GetScheduler();
-                var jobKey = new JobKey(job.Key);
                 var jobDetails = JobBuilder.Create(job.Value)
-                    .WithIdentity(jobKey)
+                    .WithIdentity(job.Key)
                     .Build();
-                var interval = GetTimeSpanByJobKey(jobKey, newSetting);
+                var interval = GetTimeSpanByJobKey(job.Key, setting);
                 if (interval is null)
                 {
-                    logger.LogInformation($"Job {jobKey.Name} has no interval setup, so ignored");
+                    logger.LogInformation($"Job {job.Key.Name} has no interval setup, so ignored");
                     continue;
                 }
-                var trigger = TriggerBuilder.Create()
-                    .WithIdentity(job.Key)
-                    .StartNow()
-                    .WithSimpleSchedule(x => x
-                        .WithInterval(interval.Value)
-                        .RepeatForever())
-                    .Build();
-                await scheduler.ScheduleJob(jobDetails, trigger);
-                var randomValue = random.Next(1, 10);
-                await scheduler.StartDelayed(TimeSpan.FromMinutes(randomValue));
-                logger.LogInformation($"Job {jobKey.Name} is updated with inteval: {interval}, will be started after {randomValue} minutes");
+
+                var triggerKey = new TriggerKey(job.Key.Name);
+                var oldTrigger = await newScheduler.GetTrigger(triggerKey);
+                if (oldTrigger != null)
+                {
+                    var newTrigger = oldTrigger.GetTriggerBuilder()
+                        .WithSimpleSchedule(x => x
+                            .WithInterval(interval.Value)
+                            .RepeatForever())
+                        .Build();
+
+                    await newScheduler.RescheduleJob(triggerKey, newTrigger);
+                }
+                else
+                {
+                    var trigger = TriggerBuilder.Create()
+                        .WithIdentity(triggerKey)
+                        .WithSimpleSchedule(x => x
+                            .WithInterval(interval.Value)
+                            .RepeatForever())
+                        .Build();
+
+                    await newScheduler.ScheduleJob(jobDetails, trigger);
+                }
+
+                logger.LogInformation($"Job {job.Key.Name} is updated with interval: {interval}, will start now");
             }
+            await newScheduler.Start();
         }
 
         private TimeSpan? GetTimeSpanByJobKey(JobKey jobKey, Setting? newSetting)
         {
-            if (jobKey.Name == nameof(ReadAllActiveAdsJob))
+            if (jobKey.Name.Contains(nameof(ReadAllActiveAdsJob)))
             {
                 return TimeSpan.FromMinutes(newSetting?.ReadInterval ?? 5);
             }
 
-            if (jobKey.Name == nameof(RePostAdByTitleJob))
+            if (jobKey.Name.Contains(nameof(RePostAdByTitleJob)))
             {
                 return TimeSpan.FromMinutes(newSetting?.RePostInterval ?? 5);
             }
 
-            if (jobKey.Name == nameof(WebDriverStatusJob))
+            if (jobKey.Name.Contains(nameof(WebDriverStatusJob)))
             {
                 return TimeSpan.FromMinutes(1);
             }
             return null;
         }
-
-        
     }
 }

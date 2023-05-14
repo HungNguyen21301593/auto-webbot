@@ -1,11 +1,13 @@
 ﻿using Core.Model;
 using Entities;
+using FireBaseAuthenticator.KijijiHelperServices;
 using Infastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Quartz;
 using UseCase.Service;
 using UseCase.Service.Tabs;
+using Util;
 
 namespace UseCase.Jobs
 {
@@ -15,40 +17,28 @@ namespace UseCase.Jobs
         public IKijijiPostingService KijijiPostingService { get; }
         public IPostRepository PostRepository { get; }
         public ILogger<RePostAdByTitleJob> Logger { get; }
+        public static readonly JobKey Key = new JobKey(nameof(RePostAdByTitleJob));
+        public DataContext DataContext { get; }
 
         public RePostAdByTitleJob(ISettingRepository settingRepository,
             IKijijiPostingService kijijiPostingService,
             IPostRepository postRepository,
-            ILogger<RePostAdByTitleJob> logger)
+            ILogger<RePostAdByTitleJob> logger,
+            DataContext dataContext)
         {
             SettingRepository = settingRepository;
             KijijiPostingService = kijijiPostingService;
             PostRepository = postRepository;
             Logger = logger;
+            DataContext = dataContext;
         }
         public async Task Execute(IJobExecutionContext context)
         {
             var jobId = Guid.NewGuid();
             Logger.LogInformation($"Job started {GetType().Name} | Id: {jobId}");
-            var setting = await SettingRepository.Read();
-            if (setting is null) { return; }
-            var post = await PostRepository.GetNextAdToPost();
-            if (post is null)
-            {
-                Logger.LogInformation($"There is no active post available, no work will be proceeded");
-                Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
-                return;
-            }
-            var adDetails = JsonConvert.DeserializeObject<AdDetails>(post.AdDetailJson);
-            Logger.LogInformation($"Found ad with title {adDetails.AdTitle}, proceed repost");
-            post.Status = AdStatus.Started;
-            await PostRepository.Update(post);
-            await Task.Delay(TimeSpan.FromMinutes(setting.AdActiveInterval));
-            KijijiPostingService.Execute(KijijiExecuteType.PostAdByTitle, new ExecuteParams
-            {
-                Post = post,
-                Setting = setting
-            });
+           
+            
+            KijijiPostingService.Execute(KijijiExecuteType.PostAdByTitle);
             Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
         }
     }

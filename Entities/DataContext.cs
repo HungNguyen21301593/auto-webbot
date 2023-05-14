@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
 namespace Entities
 {
@@ -11,6 +12,8 @@ namespace Entities
         {
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
+
+
         public DbSet<DeviceRegistration> DeviceRegistrations { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<Post> Posts { get; set; }
@@ -65,6 +68,8 @@ namespace Entities
         [Column(TypeName = "varchar(24)")]
         public AdStatus Status { get; set; }
         public string AdDetailJson { get; set; }
+
+        [JsonIgnore]
         public ICollection<StepLog> stepLogs { get; set; }
     }
 

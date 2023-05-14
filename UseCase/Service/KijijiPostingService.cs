@@ -10,6 +10,8 @@ namespace UseCase.Service
     public partial class KijijiPostingService : IKijijiPostingService
     {
         private readonly IFireBaseLoggingService fireBaseLoggingService;
+        private readonly DataContext dataContext;
+
         private IBrowserManagerService BrowserManager { get; }
         public ISigninTabService SigninService { get; }
         private IReadAdTabService ReadAdTabService { get; }
@@ -52,12 +54,18 @@ namespace UseCase.Service
             GlobalLockResourceService = globalLockResourceService;
         }
 
-        public void Execute(KijijiExecuteType kijijiExecuteType, ExecuteParams @params)
+        public void Execute(KijijiExecuteType kijijiExecuteType)
         {
             lock (GlobalLockResourceService.WebDriverLockResource)
             {
                 try
                 {
+                    var setting = SettingRepository.Read().Result;
+                    if (setting is null) {
+                        Logger.LogInformation("There is no setting saved, so return");
+                        return;
+                    }
+
                     var verify = DeviceInfoChart.Verify().Result;
                     if (!verify.IsVerified)
                     {
@@ -69,12 +77,12 @@ namespace UseCase.Service
                     switch (kijijiExecuteType)
                     {
                         case KijijiExecuteType.ReadAds:
-                            TryLogInAndLogOutIfNewAccountSetting(@params.Setting).Wait();
+                            TryLogInAndLogOutIfNewAccountSetting(setting).Wait();
                             ReadAllAdExceedPage(0).Wait();
                             break;
                         case KijijiExecuteType.PostAdByTitle:
-                            TryLogInAndLogOutIfNewAccountSetting(@params.Setting).Wait();
-                            StartRepostingWithTitle(@params.Post, @params.Setting).Wait();
+                            TryLogInAndLogOutIfNewAccountSetting(setting).Wait();
+                            TryStartRepostingWithTitle(setting).Wait();
                             break;
                         case KijijiExecuteType.Startup:
                             SigninService.LoadForAppStartup().Wait();

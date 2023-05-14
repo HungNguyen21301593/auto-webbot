@@ -13,6 +13,8 @@ namespace UseCase.Jobs
         public IKijijiPostingService KijijiPostingService { get; }
         public ILogger<ReadAllActiveAdsJob> Logger { get; }
 
+        public static readonly JobKey Key = new JobKey(nameof(ReadAllActiveAdsJob));
+
         public ReadAllActiveAdsJob(ISettingRepository settingRepository, 
             IKijijiPostingService kijijiPostingService,
             ILogger<ReadAllActiveAdsJob> logger)
@@ -25,8 +27,7 @@ namespace UseCase.Jobs
         {
             var jobId = Guid.NewGuid();
             Logger.LogInformation($"Job started {GetType().Name} | Id: {jobId}");
-            var setting = await SettingRepository.Read();
-            KijijiPostingService.Execute(KijijiExecuteType.ReadAds, new ExecuteParams { Page = setting.PageToTrigger, Setting = setting });
+            KijijiPostingService.Execute(KijijiExecuteType.ReadAds);
             Logger.LogInformation($"Job executed {GetType().Name} | Id: {jobId}");
         }
     }

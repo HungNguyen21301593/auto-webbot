@@ -11,6 +11,6 @@ namespace UseCase.Service
 {
     public interface IKijijiPostingService
     {
-        void Execute(KijijiExecuteType kijijiExecuteType, ExecuteParams @params);
+        void Execute(KijijiExecuteType kijijiExecuteType);
     }
 }

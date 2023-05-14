@@ -102,7 +102,7 @@ namespace UseCase.Service
 
         private async Task SignInAsInit()
         {
-            kijijiPostingService.Execute(KijijiExecuteType.Startup, new ExecuteParams());
+            kijijiPostingService.Execute(KijijiExecuteType.Startup);
         }
     }
 }

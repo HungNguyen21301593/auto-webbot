@@ -43,7 +43,7 @@ namespace UseCase.Service.Tabs
                     Logger.LogInformation(
                         $"{StepType.SearchAdBeforeDelete} {JsonConvert.SerializeObject(post.AdDetailJson)}");
 
-                    var searchAdByTitleLocator = By.XPath($"//a[contains(text(),\"{title}\")]");
+                    var searchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title}\")]");
                     var adTitleElement = WebWaiter
                         .Until(SeleniumExtras
                             .WaitHelpers

@@ -2,6 +2,7 @@
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Util;
 
 namespace Infastructure.Repositories
 {
@@ -14,18 +15,12 @@ namespace Infastructure.Repositories
             DataContext = dataContext;
         }
 
-        public readonly List<AdStatus> ShouldBeRePostedStatuses = new()
-        {
-            AdStatus.New,
-            AdStatus.DeleteFailed,
-            AdStatus.PostedFailed,
-            AdStatus.ReadFailed,
-            AdStatus.ValidateFailed
-        };
+        
 
         public async Task<Post?> GetNextAdToPost()
         {
-            return await DataContext.Posts.Where(p => ShouldBeRePostedStatuses.Contains(p.Status))
+            return await DataContext.Posts.Where(p => Consts.ShouldBeRePostedStatuses.Contains(p.Status))
+                .OrderBy(p => p.Created)
                 .FirstOrDefaultAsync();
         }
 

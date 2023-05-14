@@ -2,6 +2,8 @@
 using Entities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OpenQA.Selenium.Support.UI;
+using Util;
 
 namespace UseCase.Service
 {
@@ -46,64 +48,103 @@ namespace UseCase.Service
             GlobalLockResourceService.CurrentSetting = Setting;
         }
 
-        private async Task StartRepostingWithTitle(Post post, Setting paramsSetting)
+        private async Task TryStartRepostingWithTitle(Setting paramsSetting)
         {
-            Logger.LogInformation("******************************************************");
-            Logger.LogInformation($"Proceed reposting ad with id {post.Id}");
-            Logger.LogInformation("******************************************************");
+            var post = await PostRepository.GetNextAdToPost();
+            if (post is null)
+            {
+                Logger.LogInformation($"There is no active post available, no work will be proceeded");
+                return;
+            }
+            
             var existingPost = await PostRepository.GetById(post.Id);
             if (existingPost is null)
             {
                 Logger.LogInformation($"Could not found any ad with id {post.Id} from the database, so return");
                 return;
             }
-
-            var title = JsonConvert.DeserializeObject<AdDetails>(post.AdDetailJson).AdTitle;
+            var title = JsonConvert.DeserializeObject<AdDetails>(existingPost.AdDetailJson).AdTitle;
             if (title is null)
             {
-                Logger.LogInformation($"Could not get the title from the saved ads on db with id {post.Id}, content: {post.AdDetailJson}");
-                await ResetPostStatusAndSteps(existingPost);
+                Logger.LogInformation($"Could not get the title from the saved ads on db with id {existingPost.Id}, content: {existingPost.AdDetailJson}");
                 return;
             }
-            existingPost.stepLogs = new List<StepLog>();
-            await PostRepository.Update(existingPost);
+            Logger.LogInformation($"Ad with title {title} is on status {existingPost.Status}");
+            if (!Consts.ShouldBeRePostedStatuses.Contains(existingPost.Status))
+            {
+                Logger.LogInformation($"Ad with title {title} has already started posting, so return and do nothing");
+                return;
+            }
+            try
+            {
+                Logger.LogInformation($"Found ad with title {title}, proceed repost");
+                existingPost.Status = AdStatus.Started;
+                existingPost.stepLogs = new List<StepLog>();
+                await PostRepository.Update(existingPost);
+                var result =  await StartRepostingWithTitle(existingPost, paramsSetting);
+                if (!result)
+                {
+                    Logger.LogInformation($"Ad with title {title} wasn't reposted, so reset status, and retry later");
+                    await ResetPostStatusAndSteps(existingPost);
+                    return;
+                }
+                Logger.LogInformation("******************************************************");
+                Logger.LogInformation($"Done reposting ad with title {title}");
+                Logger.LogInformation("******************************************************");
 
+                await DeviceInfoChart.UpdateRemainingPostAndSaveDeviceInfo();
+                Logger.LogInformation("******************************************************");
+                Logger.LogInformation($"Updated remaining posts");
+                Logger.LogInformation("******************************************************");
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"There was an error with posting ad id {post.Id} so reset status, and retry later, {e}");
+                Logger.LogError("******************************************************");
+                Logger.LogError($"Failed reposting ad with title {title}");
+                Logger.LogError("******************************************************");
+                await ResetPostStatusAndSteps(existingPost);
+            }
+        }
+
+        private async Task<bool> StartRepostingWithTitle(Post existingPost, Setting paramsSetting)
+        {
+            string title = JsonConvert.DeserializeObject<AdDetails>(existingPost.AdDetailJson).AdTitle ?? throw new ArgumentNullException();
+            Logger.LogInformation("******************************************************");
+            Logger.LogInformation($"Proceed reposting ad with title {title}");
+            Logger.LogInformation("******************************************************");
             var isAdAlreadyPresent = await ReadAdTabService.SearchAdTitle(title);
             var isAdExceedPage = await ReadAdTabService.IsAdExceedPage(title, paramsSetting.PageToTrigger);
             if (!isAdAlreadyPresent)
             {
-                await ProceedRepostOnly(existingPost, title);
-                return;
+                return await ProceedRepostOnly(existingPost, title);
             }
             if (isAdAlreadyPresent && isAdExceedPage)
             {
-                await ProceedDeleteThenRepost(existingPost, title,paramsSetting.PageToTrigger);
-                return;
+                return await ProceedDeleteThenRepost(existingPost, title,paramsSetting.PageToTrigger);
             }
 
             Logger.LogInformation($"Ad with title {title} is present and NOT exceed page {paramsSetting.PageToTrigger}, so do nothing, return.");
-            await ResetPostStatusAndSteps(existingPost);
+            return false;
         }
 
-        private async Task ProceedRepostOnly(Post existingPost, string title)
+        private async Task<bool> ProceedRepostOnly(Post existingPost, string title)
         {
             Logger.LogInformation($"Ad with title {title} is not present so procede repost.");
             var postSuccess = await ProceedRePost(existingPost, title);
-            if (!postSuccess)
-            {
-                await ResetPostStatusAndSteps(existingPost);
-            }
+            return postSuccess;
         }
 
-        private async Task ProceedDeleteThenRepost(Post existingPost, string title, long Page)
+        private async Task<bool> ProceedDeleteThenRepost(Post existingPost, string title, long Page)
         {
             Logger.LogInformation($"Ad with title {title} is present and exceed page {Page}, so proceed delete, then repost.");
-            await ProceedDelete(existingPost, title);
-            var postSuccess = await ProceedRePost(existingPost, title);
-            if (!postSuccess)
+            var deleteSuccess = await ProceedDelete(existingPost, title);
+            if (!deleteSuccess)
             {
-                await ResetPostStatusAndSteps(existingPost);
+                return false;
             }
+            var postSuccess = await ProceedRePost(existingPost, title);
+            return postSuccess;
         }
 
         private async Task<bool> ProceedRePost(Post existingPost, string title)
@@ -113,22 +154,15 @@ namespace UseCase.Service
             existingPost.Status = await GetFinalPostStatus(existingPost.Id);
             await PostRepository.Update(existingPost);
 
+            Logger.LogInformation($"Ad status: {existingPost.Status} details: {JsonConvert.SerializeObject(existingPost.AdDetailJson)}");
             if (existingPost.Status != AdStatus.PostSucceeded)
             {
-                Logger.LogInformation("******************************************************");
-                Logger.LogInformation($"Failed reposting ad with title {title}");
-                Logger.LogInformation("******************************************************");
                 return false;
             }
-
-            Logger.LogInformation("******************************************************");
-            Logger.LogInformation($"Done reposting ad with title {title}");
-            Logger.LogInformation("******************************************************");
-            await DeviceInfoChart.UpdateRemainingPostAndSaveDeviceInfo();
             return true;
         }
 
-        private async Task ProceedDelete(Post existingPost, string title)
+        private async Task<bool> ProceedDelete(Post existingPost, string title)
         {
             var adDetails = await ReadAdTabService.ReadAdContentByTitle(title, existingPost);
             existingPost.AdDetailJson = JsonConvert.SerializeObject(adDetails);
@@ -146,8 +180,12 @@ namespace UseCase.Service
             Logger.LogInformation("******************************************************");
             Logger.LogInformation($"Done deleting ad with title {title}");
             Logger.LogInformation("******************************************************");
+            if (existingPost.Status == AdStatus.DeleteSucceeded)
+            {
+                await WaitAfterDelete();
+            }
 
-            await WaitAfterDelete();
+            return existingPost.Status == AdStatus.DeleteSucceeded;
         }
 
         private async Task WaitAfterDelete()
@@ -219,6 +257,7 @@ namespace UseCase.Service
         private async Task ResetPostStatusAndSteps(Post post)
         {
             post.Status = AdStatus.New;
+            post.Created = DateTime.UtcNow;
             post.stepLogs = new List<StepLog>();
             await PostRepository.Update(post);
         }
