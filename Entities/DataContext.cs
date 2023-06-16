@@ -81,7 +81,6 @@ namespace Entities
         ReadFailed,
         DeleteSucceeded,
         DeleteFailed,
-        ValidateSucceeded,
         ValidateFailed,
         PostSucceeded,
         PostedFailed

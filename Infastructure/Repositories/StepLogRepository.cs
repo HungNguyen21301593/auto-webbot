@@ -28,6 +28,7 @@ namespace Infastructure.Repositories
 
         public async Task Write(StepLog stepLog)
         {
+            return;
             DataContext.StepLog.Add(stepLog);
             await DataContext.SaveChangesAsync();
         }

@@ -2,7 +2,6 @@
 using Entities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OpenQA.Selenium.Support.UI;
 using Util;
 
 namespace UseCase.Service
@@ -12,7 +11,7 @@ namespace UseCase.Service
         private async Task TryLogInAndLogOutIfNewAccountSetting(Setting? Setting)
         {
             var currentSetting = GlobalLockResourceService.CurrentSetting;
-            
+
             if (Setting == null) throw new ArgumentNullException(nameof(Setting));
             if (Setting?.KijijiEmail is null)
             {
@@ -56,7 +55,7 @@ namespace UseCase.Service
                 Logger.LogInformation($"There is no active post available, no work will be proceeded");
                 return;
             }
-            
+
             var existingPost = await PostRepository.GetById(post.Id);
             if (existingPost is null)
             {
@@ -78,14 +77,12 @@ namespace UseCase.Service
             try
             {
                 Logger.LogInformation($"Found ad with title {title}, proceed repost");
-                existingPost.Status = AdStatus.Started;
-                existingPost.stepLogs = new List<StepLog>();
-                await PostRepository.Update(existingPost);
-                var result =  await StartRepostingWithTitle(existingPost, paramsSetting);
+
+                var result = await StartRepostingWithTitle(existingPost, paramsSetting);
                 if (!result)
                 {
                     Logger.LogInformation($"Ad with title {title} wasn't reposted, so reset status, and retry later");
-                    await ResetPostStatusAndSteps(existingPost);
+                    await TryResetSteps(existingPost);
                     return;
                 }
                 Logger.LogInformation("******************************************************");
@@ -103,7 +100,8 @@ namespace UseCase.Service
                 Logger.LogError("******************************************************");
                 Logger.LogError($"Failed reposting ad with title {title}");
                 Logger.LogError("******************************************************");
-                await ResetPostStatusAndSteps(existingPost);
+                await TryResetSteps(existingPost);
+                await FreezeWhenAnythingFailed();
             }
         }
 
@@ -115,36 +113,76 @@ namespace UseCase.Service
             Logger.LogInformation("******************************************************");
             var isAdAlreadyPresent = await ReadAdTabService.SearchAdTitle(title);
             var isAdExceedPage = await ReadAdTabService.IsAdExceedPage(title, paramsSetting.PageToTrigger);
-            if (!isAdAlreadyPresent)
+            if (!isAdAlreadyPresent
+                && existingPost.ShouldRepostEvenIfNotShowing())
             {
+                Logger.LogInformation($"Ad with title {title} is not present, and has status {existingPost.Status}, so proceed repost only.");
+                await SetAdAsStarted(existingPost);
                 return await ProceedRepostOnly(existingPost, title);
             }
+
+            if (!isAdAlreadyPresent
+                && !existingPost.ShouldRepostEvenIfNotShowing())
+            {
+                Logger.LogInformation($"Ad with title {title} is not present, and has status {existingPost.Status}, so proceed to remove completely.");
+                await ProceedRemove(existingPost);
+                return false;
+            }
+
             if (isAdAlreadyPresent && isAdExceedPage)
             {
-                return await ProceedDeleteThenRepost(existingPost, title,paramsSetting.PageToTrigger);
+                Logger.LogInformation($"Ad with title {title} is present and exceed page {paramsSetting.PageToTrigger}, so proceed delete, then repost.");
+                await SetAdAsStarted(existingPost);
+                return await ProceedDeleteThenRepost(existingPost, title, paramsSetting.PageToTrigger);
             }
 
             Logger.LogInformation($"Ad with title {title} is present and NOT exceed page {paramsSetting.PageToTrigger}, so do nothing, return.");
             return false;
         }
 
-        private async Task<bool> ProceedRepostOnly(Post existingPost, string title)
+        private async Task SetAdAsStarted(Post existingPost)
         {
-            Logger.LogInformation($"Ad with title {title} is not present so procede repost.");
-            var postSuccess = await ProceedRePost(existingPost, title);
-            return postSuccess;
+            existingPost.Status = AdStatus.Started;
+            existingPost.stepLogs = new List<StepLog>();
+            await PostRepository.Update(existingPost);
         }
 
         private async Task<bool> ProceedDeleteThenRepost(Post existingPost, string title, long Page)
         {
-            Logger.LogInformation($"Ad with title {title} is present and exceed page {Page}, so proceed delete, then repost.");
-            var deleteSuccess = await ProceedDelete(existingPost, title);
-            if (!deleteSuccess)
+            var deleteResult = await ProceedDelete(existingPost, title);
+            
+            if (!deleteResult)
             {
+                Logger.LogError("Ad deleted failed, so proceed to freeze, return and reset");
+                await FreezeWhenAnythingFailed();
                 return false;
             }
             var postSuccess = await ProceedRePost(existingPost, title);
+            if (!postSuccess)
+            {
+                Logger.LogError("Ad posted failed, so proceed to freeze, return and reset");
+                 await FreezeWhenAnythingFailed();
+                return false;
+            }
             return postSuccess;
+        }
+
+        private async Task<bool> ProceedRepostOnly(Post existingPost, string title)
+        {
+            var postSuccess = await ProceedRePost(existingPost, title);
+            if (!postSuccess)
+            {
+                Logger.LogError("Ad posted failed, so proceed to freeze, return and reset");
+                await FreezeWhenAnythingFailed();
+                return false;
+            }
+            return postSuccess;
+        }
+
+        private async Task ProceedRemove(Post existingPost)
+        {
+            existingPost.Status = AdStatus.PostSucceeded;
+            await PostRepository.Update(existingPost);
         }
 
         private async Task<bool> ProceedRePost(Post existingPost, string title)
@@ -154,12 +192,16 @@ namespace UseCase.Service
             existingPost.Status = await GetFinalPostStatus(existingPost.Id);
             await PostRepository.Update(existingPost);
 
-            Logger.LogInformation($"Ad status: {existingPost.Status} details: {JsonConvert.SerializeObject(existingPost.AdDetailJson)}");
-            if (existingPost.Status != AdStatus.PostSucceeded)
+            var isAdPresentOnActiveList = await ReadAdTabService.SearchAdTitle(title, activeList: true);
+            var isAdPresentOnInActiveList = await ReadAdTabService.SearchAdTitle(title, activeList: false);
+            if (!isAdPresentOnActiveList && !isAdPresentOnInActiveList)
             {
-                return false;
+                Logger.LogError("ValidateFailed: All posting steps has been executed successfully but is not showed");
+                existingPost.Status = AdStatus.ValidateFailed;
+                await PostRepository.Update(existingPost);
             }
-            return true;
+            Logger.LogInformation($"Ad status: {existingPost.Status} details: {JsonConvert.SerializeObject(existingPost.AdDetailJson)}");
+            return existingPost.Status == AdStatus.PostSucceeded;
         }
 
         private async Task<bool> ProceedDelete(Post existingPost, string title)
@@ -173,18 +215,26 @@ namespace UseCase.Service
             Logger.LogInformation($"Content: {JsonConvert.SerializeObject(adDetails)}");
             Logger.LogInformation("******************************************************");
 
-
             await DeleteTabService.DeleteAdByTitle(existingPost);
             existingPost.Status = await GetDeleteStatus(existingPost.Id);
             await PostRepository.Update(existingPost);
             Logger.LogInformation("******************************************************");
             Logger.LogInformation($"Done deleting ad with title {title}");
             Logger.LogInformation("******************************************************");
+
+            var isAdPresentAfterDelete = await ReadAdTabService.SearchAdTitle(title);
+            if (isAdPresentAfterDelete)
+            {
+                Logger.LogError("ValidateFailed: All delete steps has been executed successfully but ad still present");
+                existingPost.Status = AdStatus.ValidateFailed;
+                await PostRepository.Update(existingPost);
+                return false;
+            }
+
             if (existingPost.Status == AdStatus.DeleteSucceeded)
             {
                 await WaitAfterDelete();
             }
-
             return existingPost.Status == AdStatus.DeleteSucceeded;
         }
 
@@ -254,12 +304,17 @@ namespace UseCase.Service
             Logger.LogInformation("******************************************************");
         }
 
-        private async Task ResetPostStatusAndSteps(Post post)
+        private async Task TryResetSteps(Post post)
         {
-            post.Status = AdStatus.New;
-            post.Created = DateTime.UtcNow;
-            post.stepLogs = new List<StepLog>();
-            await PostRepository.Update(post);
+            try
+            {
+                post.Created = DateTime.UtcNow;
+                post.stepLogs = new List<StepLog>();
+                await PostRepository.Update(post);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private async Task SetupTabs()
@@ -270,9 +325,12 @@ namespace UseCase.Service
             BrowserManager.OpenNewTabAndSetName(KijijiBrowserTabs.PostNew.ToString());
         }
 
-        private async Task CleanBrowserAndReInit()
+
+        private async Task FreezeWhenAnythingFailed()
         {
-            BrowserManager.GetDriver().Manage().Cookies.DeleteAllCookies();
+            var freezeTime = TimeSpan.FromHours(2);
+            Console.WriteLine($"There was an error with reposting ad, proceed to frezee for {freezeTime}");
+           await Task.Delay(freezeTime);
         }
     }
 }

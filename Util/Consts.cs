@@ -17,5 +17,11 @@ namespace Util
             AdStatus.ReadFailed,
             AdStatus.ValidateFailed
         };
+
+        public static readonly List<AdStatus> ShouldBeRePostedEvenWhenNotPresentStatuses = new()
+        {
+            AdStatus.PostedFailed,
+            AdStatus.ValidateFailed,
+        };
     }
 }

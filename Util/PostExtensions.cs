@@ -11,6 +11,13 @@ namespace Util
             return JsonConvert.DeserializeObject<AdDetails>(post.AdDetailJson);
         }
 
+        public static bool ShouldRepostEvenIfNotShowing(this Post post)
+        {
+            var details = post.GetAdDetails();
+            return Consts.ShouldBeRePostedEvenWhenNotPresentStatuses.Contains(post.Status) 
+                && details.Categories.Any();
+        }
+
         public static LogTreeStatus MapToLogTreeStatus(this AdStatus status)
         {
             switch (status)
@@ -20,7 +27,6 @@ namespace Util
                 case AdStatus.Started:
                 case AdStatus.ReadSucceeded:
                 case AdStatus.DeleteSucceeded:
-                case AdStatus.ValidateSucceeded:
                     return LogTreeStatus.Pending;
                 case AdStatus.ReadFailed:
                 case AdStatus.DeleteFailed:

@@ -11,6 +11,6 @@ namespace UseCase.Service.Tabs
     public interface IPostTabService
     {
         Task SubmitCategories(Post post);
-        Task<bool> InputAdDetails(Post post);
+        Task InputAdDetails(Post post);
     }
 }

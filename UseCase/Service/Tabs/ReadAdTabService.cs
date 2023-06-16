@@ -17,6 +17,10 @@ namespace UseCase.Service.Tabs
     {
         public ILogger<ReadAdTabService> Logger { get; }
         private readonly KijijiActionHelper _kijijiActionHelper;
+
+        public string ActiveListUrl { get; }
+        public string InActiveListUrl { get; }
+
         private By AdItemsLocator = By.CssSelector("tr[class*='item-']");
         private By AdTitlesLocator = By.CssSelector("div[class*='titleAndPrice']");
         private By AdPageLocator = By.CssSelector("td[class*='pageCell']");
@@ -52,6 +56,8 @@ namespace UseCase.Service.Tabs
         {
             Logger = logger;
             _kijijiActionHelper = kijijiActionHelper;
+            ActiveListUrl = configuration["KijijiConfig:ReadAd:Url"] ?? "";
+            InActiveListUrl = configuration["KijijiConfig:ReadAd:InActiveUrl"] ?? "";
         }
 
         public async Task<List<string>> ReadAllAdTitlesExceedPage(long exceedPage)
@@ -77,12 +83,12 @@ namespace UseCase.Service.Tabs
             return result;
         }
 
-        public async Task<bool> SearchAdTitle(string title)
+        public async Task<bool> SearchAdTitle(string title, bool activeList = true)
         {
             try
             {
-                await Switch();
-                SearchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title}\")]");
+                await Switch(activeList ? ActiveListUrl : InActiveListUrl);
+                SearchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title.Trim()}\")]");
                 var adTitleElement = WebWaiter
                     .Until(SeleniumExtras
                         .WaitHelpers
@@ -106,7 +112,7 @@ namespace UseCase.Service.Tabs
         public async Task<AdDetails> ReadAdContentByTitle(string title, Post post)
         {
             await Switch();
-            SearchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title}\")]");
+            SearchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title.Trim()}\")]");
             var adTitleElement = WebWaiter
                 .Until(SeleniumExtras
                     .WaitHelpers

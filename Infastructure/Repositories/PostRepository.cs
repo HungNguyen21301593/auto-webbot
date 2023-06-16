@@ -64,7 +64,7 @@ namespace Infastructure.Repositories
 
         public async Task<List<Post>> GetAllFailedOrOnGoingPost()
         {
-            return await DataContext.Posts.Where(p => p.Status != AdStatus.PostSucceeded)
+            return await DataContext.Posts.Where(p => p.Status !=  AdStatus.PostSucceeded && !Consts.ShouldBeRePostedStatuses.Contains(p.Status))
                 .Include(p => p.stepLogs)
                 .ToListAsync();
         }
@@ -82,6 +82,20 @@ namespace Infastructure.Repositories
                 .Include(p => p.stepLogs)
                 .ToListAsync();
             return posts;
+        }
+
+        public async Task Remove(Post coreRequest)
+        {
+            var postToBeRemoved = await DataContext.Posts
+                .Include(p => p.stepLogs)
+                .FirstOrDefaultAsync(p => p.Id == coreRequest.Id);
+            if (postToBeRemoved != null)
+            {
+                throw new Exception($"Could not found any post with ID {coreRequest.Id}");
+            }
+            DataContext.StepLog.RemoveRange(coreRequest.stepLogs);
+            DataContext.Posts.RemoveRange(coreRequest);
+            await DataContext.SaveChangesAsync();
         }
     }
 }

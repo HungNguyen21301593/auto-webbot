@@ -17,6 +17,7 @@ namespace Infastructure.Repositories
         Task<Post?> GetById(Guid id);
         Task<Post> Create(Post? post);
         Task<Post> Update(Post coreRequest);
+        Task Remove(Post coreRequest);
         Task<List<Post>> UpdateRange(List<Post> posts);
         Task<List<Post>> GetWithHistory();
     }

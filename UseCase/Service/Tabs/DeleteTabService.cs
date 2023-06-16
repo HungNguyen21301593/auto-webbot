@@ -4,18 +4,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseCase.Service.Tabs
 {
     public class DeleteTabService : BrowserTabService, IDeleteTabService
     {
         public ILogger<DeleteTabService> Logger { get; }
+        public string ActiveListUrl { get; set; }
+        public string InActiveListUrl { get; set; }
         public KijijiActionHelper KijijiActionHelper { get; }
         private readonly By DeleteButtonLocator = By.XPath("//*[text()='Delete']");
         private readonly By ReasonToDeleteLocator = By.XPath("//*[text()='Prefer not to say']");
@@ -28,22 +24,24 @@ namespace UseCase.Service.Tabs
         {
             Logger = logger;
             KijijiActionHelper = kijijiActionHelper;
+            ActiveListUrl = configuration["KijijiConfig:DeleteAd:Url"]?? "";
+            InActiveListUrl = configuration["KijijiConfig:DeleteAd:InActiveUrl"] ?? "";
         }
 
-        public async Task DeleteAdByTitle(Post post)
+        public async Task DeleteAdByTitle(Post post, bool activeList = true)
         {
             var adDetails = JsonConvert.DeserializeObject<AdDetails>(post.AdDetailJson);
             var title = adDetails.AdTitle;
             await Task.Run(async () =>
             {
-                await Switch();
+                await Switch(activeList ? ActiveListUrl : InActiveListUrl);
                 await KijijiActionHelper.ExecuteAndSaveResult(() =>
                 {
                     Thread.Sleep(SleepIntervalBetweenEachAcion);
                     Logger.LogInformation(
                         $"{StepType.SearchAdBeforeDelete} {JsonConvert.SerializeObject(post.AdDetailJson)}");
 
-                    var searchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title}\")]");
+                    var searchAdByTitleLocator = By.XPath($"//a[contains(normalize-space(),\"{title.Trim()}\")]");
                     var adTitleElement = WebWaiter
                         .Until(SeleniumExtras
                             .WaitHelpers

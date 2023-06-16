@@ -28,7 +28,7 @@ namespace UseCase.Service.Tabs
         private By phoneLocator = By.Id("PhoneNumber");
 
 
-        public async Task<bool> InputAdDetails(Post post)
+        public async Task InputAdDetails(Post post)
         {
             var adDetails = JsonConvert.DeserializeObject<AdDetails>(post.AdDetailJson);
 
@@ -248,7 +248,7 @@ namespace UseCase.Service.Tabs
                 return adDetails;
             }, post, StepType.ActiveTermAndCondition);
 
-            return await KijijiActionHelper.ExecuteAndSaveResult<bool>(() =>
+            await KijijiActionHelper.ExecuteAndSaveResult(() =>
             {
                 Thread.Sleep(SleepIntervalBetweenEachAcion);
                 Logger.LogInformation(
@@ -257,11 +257,10 @@ namespace UseCase.Service.Tabs
                 if (TestMode)
                 {
                     Logger.LogInformation("App is in testing node, so no ad will be actual posted");
-                    return true;
+                    return adDetails;
                 }
-
                 Post();
-                return CheckIfPostedSuccess();
+                return adDetails;
             }, post, StepType.SubmitPost);
         }
         
@@ -302,18 +301,7 @@ namespace UseCase.Service.Tabs
             element.First().SendKeys(adDetails.AdTitle);
         }
 
-        private bool CheckIfPostedSuccess()
-        {
-            Thread.Sleep(SleepIntervalBetweenEachAcion);
-            WebDriver.Navigate().Refresh();
-            Thread.Sleep(SleepIntervalBetweenEachAcion);
-            var postedText = WebDriver.FindElements(By.XPath("//*[text()='You have successfully posted your ad!']"));
-            if (!postedText.Any())
-            {
-                throw new Exception("Sumited failed");
-            }
-            return true;
-        }
+        
 
         private void SelectBasicPakage()
         {

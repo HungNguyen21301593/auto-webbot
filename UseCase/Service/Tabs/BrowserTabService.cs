@@ -34,10 +34,11 @@ namespace UseCase.Service.Tabs
             BaseTabUrl = baseTabUrl ?? throw new ArgumentNullException(nameof(baseTabUrl));
         }
 
-        public Task<IWebDriver> Switch()
+        public Task<IWebDriver> Switch(string? url = null)
         {
+            var targetUrl = url ?? BaseTabUrl;
             WebDriver.SwitchTo().Window(BrowserManagerService.GetTabByName(BrowserTab.ToString()));
-            WebDriver.Navigate().GoToUrl(BaseTabUrl);
+            WebDriver.Navigate().GoToUrl(targetUrl);
             return Task.FromResult(WebDriver);
         }
     }

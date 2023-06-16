@@ -7,7 +7,7 @@ namespace UseCase.Service.Tabs
     {
         Task<List<string>> ReadAllAdTitlesExceedPage(long page);
 
-        Task<bool> SearchAdTitle(string title);
+        Task<bool> SearchAdTitle(string title, bool activeList = true);
 
         Task<bool> IsAdExceedPage(string title, long page);
 
